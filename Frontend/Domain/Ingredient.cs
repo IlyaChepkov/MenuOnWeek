@@ -1,8 +1,5 @@
 ﻿namespace Domain
 {
-    /// <summary>
-    /// Сущность ингридиента
-    /// </summary>
     public sealed class Ingredient
     {
         public Ingredient(string name, int price, int id, Unit unit)
@@ -11,6 +8,7 @@
             Price = price;
             ID = id;
             Unit = unit;
+            Table = new Dictionary<Unit, double>();
         }
 
         /// <summary>
@@ -32,5 +30,7 @@
         /// Единица измерения ингридиента
         /// </summary>
         public Unit Unit {  get; set; }
+
+        public Dictionary<Unit, double> Table { get; set; }
     }
 }

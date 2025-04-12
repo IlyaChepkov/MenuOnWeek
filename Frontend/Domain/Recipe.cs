@@ -9,21 +9,34 @@ namespace Domain
     internal class Recipe
     {
 
-        public Recipe(string name, Dictionary<Ingredient, int> ingredients, int id)
+        public Recipe(string name, int id)
         {
             Name = name;
             Id = id;
-            Ingredients = ingredients;
-
-            Price = Ingredients.Select(x => x.Key.Price * x.Value).ToList().Sum();
+            Ingredients = new Dictionary<Ingredient, Quantity>();
         }
 
+        /// <summary>
+        /// ID рецепта
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// Имя рецепта
+        /// </summary>
         public string Name { get; set; }
 
-        public int Price { get; set; }
+        /// <summary>
+        /// Цена рецепта
+        /// </summary>
+        public int Price { get { 
+                return Ingredients
+                    .Select(x => (int)Math.Round(x.Key.Price *  x.Key.Table[x.Value.Unit]) * x.Value.Count)
+                    .Sum(); } }
 
-        public Dictionary<Ingredient, int> Ingredients { get; set; }
+        /// <summary>
+        /// Ингредиенты рецепта
+        /// </summary>
+        public Dictionary<Ingredient, Quantity> Ingredients { get; set; }
     }
 }
