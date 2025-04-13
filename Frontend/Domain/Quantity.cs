@@ -1,28 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
-namespace Domain
+namespace Domain;
+
+public sealed class Quantity
 {
-    internal class Quantity
+    public Quantity(int count, Unit unit)
     {
-        public Quantity(int count, Unit unit)
-        {
-            Count = count;
-            Unit = unit;
-        }
-
-        /// <summary>
-        /// Количество
-        /// </summary>
-        public int Count {  get; set; }
-
-        /// <summary>
-        /// Единицы измерения
-        /// </summary>
-        public Unit Unit { get; set; }
-
+        Count = count;
+        Unit = unit;
     }
+
+    /// <summary>
+    /// Количество
+    /// </summary>
+    public int Count { get; set; }
+
+    /// <summary>
+    /// Id единицы измерения
+    /// </summary>
+    public int UnitId { get; set; }
+
+    /// <summary>
+    /// Единицы измерения
+    /// </summary>
+    [JsonIgnore]
+    public Unit? Unit { get; set; }
+
 }

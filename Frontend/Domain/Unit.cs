@@ -16,10 +16,7 @@ public sealed class Unit
     public string Name { get; set; }
 
     /// <summary>
-    /// ID едининицы измерения
+    /// Id едининицы измерения
     /// </summary>
-    public int ID { get; set; }
-
-    public Dictionary<Unit, double> Table { get; set; }
-
+    public int Id { get; set; }
 }

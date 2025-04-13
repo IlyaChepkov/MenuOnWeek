@@ -1,36 +1,48 @@
-﻿namespace Domain
+﻿using System.Text.Json.Serialization;
+
+namespace Domain;
+
+public sealed class Ingredient
 {
-    public sealed class Ingredient
+    public Ingredient(string name, int price, int id, Unit unit)
     {
-        public Ingredient(string name, int price, int id, Unit unit)
-        {
-            Name = name;
-            Price = price;
-            ID = id;
-            Unit = unit;
-            Table = new Dictionary<Unit, double>();
-        }
-
-        /// <summary>
-        /// Название ингредиента
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Цена ингридиента 
-        /// </summary>
-        public int Price { get; set; }
-
-        /// <summary>
-        /// ID ингридиента
-        /// </summary>
-        public int ID {  get; set; }
-
-        /// <summary>
-        /// Единица измерения ингридиента
-        /// </summary>
-        public Unit Unit {  get; set; }
-
-        public Dictionary<Unit, double> Table { get; set; }
+        Name = name;
+        Price = price;
+        Id = id;
+        Unit = unit;
     }
+
+    /// <summary>
+    /// Id ингредиента
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Название ингредиента
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Цена ингредиента 
+    /// </summary>
+    public int Price { get; set; }
+
+    public int UnitId { get; set; }
+
+    /// <summary>
+    /// Единица измерения ингредиента
+    /// </summary>
+    [JsonIgnore]
+    public Unit? Unit {  get; set; }
+
+    /// <summary>
+    /// Хранимая таблица переводов единиц измерения
+    /// </summary>
+    public Dictionary<int, double> RawTable { get; set; } = new Dictionary<int, double>();
+
+    /// <summary>
+    /// Таблица переводов единиц измерения
+    /// </summary>
+    [JsonIgnore]
+    public Dictionary<Unit, double>? Table { get; set; } = new Dictionary<Unit, double>();
 }
