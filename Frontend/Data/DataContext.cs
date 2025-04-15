@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Data;
 
-internal sealed class DataContext : IDataContext
+internal sealed class DataContext
 {
 
     private DataOptions dataOptions;
