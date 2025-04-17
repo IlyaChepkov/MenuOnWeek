@@ -8,6 +8,10 @@ public static class ServiceCollectionExtension
     {
         services.AddSingleton<DataContext>();
         services.AddOptions<DataOptions>();
+        services.AddTransient<IUnitRepository, UnitRepository>();
+        services.AddTransient<IIngredientRepository, IngredientRepository>();
+        services.AddTransient<IRecipeRepository, RecipeRepository>();
+        services.AddTransient<IMenuRepository, MenuRepository>();
         return services;
     }
 }

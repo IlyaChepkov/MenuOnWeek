@@ -28,12 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Form1";
+            RecipesLict = new ListBox();
+            SuspendLayout();
+            // 
+            // RecipesLict
+            // 
+            RecipesLict.ItemHeight = 15;
+            RecipesLict.Location = new Point(0, 0);
+            RecipesLict.Name = "RecipesLict";
+            RecipesLict.Size = new Size(120, 94);
+            RecipesLict.TabIndex = 0;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(RecipesLict);
+            Name = "Form1";
+            Text = "Form1";
+            ResumeLayout(false);
         }
 
         #endregion
+
+        private ListBox RecipesLict;
     }
 }

@@ -2,6 +2,7 @@ namespace Frontend
 {
     internal static class Program
     {
+        internal static IServiceProvider serviceProvider;
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
