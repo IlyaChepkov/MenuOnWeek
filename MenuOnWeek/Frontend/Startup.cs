@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace Frontend;
+namespace MenuOnWeek.Frontend;
 
 internal static class Startup
 {

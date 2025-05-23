@@ -1,26 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Frontend
+namespace MenuOnWeek.Frontend;
+
+internal static class Program
 {
-    internal static class Program
+    internal static IServiceProvider ServiceProvider;
+
+    static Program()
     {
-        internal static IServiceProvider ServiceProvider;
+        ServiceProvider = Startup.Load(new ServiceCollection());
+    }
 
-        static Program()
-        {
-            ServiceProvider = Startup.Load(new ServiceCollection());
-        }
-
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            System.Windows.Forms.Application.Run(new Form1());
-        }
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    static void Main()
+    {
+        // To customize application configuration such as set high DPI settings or default font,
+        // see https://aka.ms/applicationconfiguration.
+        ApplicationConfiguration.Initialize();
+        System.Windows.Forms.Application.Run(new Form1());
     }
 }
