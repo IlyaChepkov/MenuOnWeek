@@ -1,7 +1,7 @@
 ﻿using Data;
 using Domain;
 
-namespace Application;
+namespace MenuOnWeek.Application.Menus;
 
 internal sealed class MenuService : IMenuService
 {

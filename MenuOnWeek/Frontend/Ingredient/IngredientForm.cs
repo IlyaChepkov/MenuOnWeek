@@ -84,9 +84,27 @@ public partial class IngredientForm : UserControl
     private void UnitsList_SelectedIndexChanged(object sender, EventArgs e)
     {
         var unit = UnitsList.SelectedItem as UnitViewModel;
+
+        if (currentIngredient.UnitId != unit.Required().Id)
+        {
+            for (int i = 0; i < currentIngredient.Table.Keys.Count; i++)
+            {
+                if (currentIngredient.Table.Keys.ElementAt(i).Id == unit.Required().Id)
+                {
+                    var removeRequest = currentIngredient.Table.Keys.ElementAt(i);
+                    currentIngredient.Table.Add(unitService.GetById(currentIngredient.UnitId),
+                        1 / currentIngredient.Table[removeRequest]);
+                    currentIngredient.Table.Remove(removeRequest);
+                    
+                    break;
+                }
+            }
+        }
+
         currentIngredient.UnitId = unit.Required().Id;
-        GridRefresh();
-    }
+
+       GridRefresh();
+    } //
 
     private void GridRefresh()
     {
@@ -123,7 +141,7 @@ public partial class IngredientForm : UserControl
                 unitService.GetAll(0, 100).Where(x => x.Id != currentIngredient.UnitId).Select(x => x.Name).ToList();
     }
 
-    internal IngredientDto GetIngredientDTO()
+    internal IngredientDto GetIngredientDto()
     {
         Dictionary<UnitViewModel, double> table = new Dictionary<UnitViewModel, double>();
 

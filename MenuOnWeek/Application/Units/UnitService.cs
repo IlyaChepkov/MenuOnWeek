@@ -53,13 +53,17 @@ internal sealed class UnitService : IUnitService
         var unit = unitRepository.GetAll(x => x.Name.
         ToLower() == name.ToLower()).SingleOrDefault();
         if (unit == null)
+        {
             return null;
+        }
         else
+        {
             return new UnitViewModel()
             {
                 Name = unit.Name,
                 Id = unit.Id
             };
+        }
     }
 
     public IReadOnlyList<UnitViewModel> GetByNamePart(string namePart, int offset, int limit)
@@ -81,4 +85,5 @@ internal sealed class UnitService : IUnitService
         var unit = unitRepository.GetAll(x => x.Id == id).Single();
         return new UnitViewModel() { Name = unit.Name, Id = unit.Id };
     }
+
 }

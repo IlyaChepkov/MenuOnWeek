@@ -33,27 +33,11 @@ public partial class IngredientsControl : UserControl
 
     private void AddButton_Click(object sender, EventArgs e)
     {
-        /*
-        CreateIngredientModel createIngredientModel = new CreateIngredientModel()
-        {
-            Name = IngredientName.Text,
-            UnitId = currentUnitId,
-            Price = (int)PriceNumericUpDown.Value,
-            Table = new Dictionary<UnitViewModel, double>()
-        };
-
-        for (int i = 0; i < UnitsTable.Rows.Count - 1; i++)
-        {
-            UnitViewModel unit = unitService.GetByName(UnitsTable.Rows[i].Cells[0].Value.ToString().Required()).Required();
-            double value = Double.Parse(UnitsTable.Rows[i].Cells[1].Value.ToString().Required().Replace('.', ','));
-
-            createIngredientModel.Table.Add(unit, value);
-        }
-
-        ingredientService.Add(createIngredientModel);
+        AddIngredientForm ingredientForm = new AddIngredientForm();
+        ingredientForm.ShowDialog();
 
         RefreshIngridentList();
-        */
+
     }
 
     private void IngredientsList_SelectedIndexChanged(object sender, EventArgs e)
@@ -82,7 +66,7 @@ public partial class IngredientsControl : UserControl
             return;
         }
 
-        IngredientDto dto = ingredientForm.GetIngredientDTO();
+        IngredientDto dto = ingredientForm.GetIngredientDto();
         
         UpdateIngredientModel ingredient = new UpdateIngredientModel()
         {
@@ -92,15 +76,6 @@ public partial class IngredientsControl : UserControl
             UnitId = dto.UnitId,
             Table = dto.Table
         };
-        /*
-        for (int i = 0; i < UnitsTable.Rows.Count - 1; i++)
-        {
-            UnitViewModel unit = unitService.GetByName(UnitsTable.Rows[i].Cells[0].Value.ToString().Required()).Required();
-            double value = Double.Parse(UnitsTable.Rows[i].Cells[1].Value.ToString().Required().Replace('.', ','));
-
-            ingredient.Table.Add(unit, value);
-        }
-        */
 
         ingredientService.Update(ingredient);
 
@@ -113,18 +88,12 @@ public partial class IngredientsControl : UserControl
 
     private void IngredientsList_KeyDown(object sender, KeyEventArgs e)
     {
-        /*
         if (e.KeyCode == Keys.Delete)
         {
-            ingredientService.Remove(CurrentIngredient.Id);
-            IngredientName.Clear();
-            PriceNumericUpDown.Value = PriceNumericUpDown.Minimum;
-            UnitsList.Items.Clear();
-            UnitsList.Text = "";
+            ingredientService.Remove((IngredientsList.SelectedItem as IngredientViewModel).Required().Id);
 
             RefreshIngridentList();
-            GridRefresh();
+            Controls.Remove(ingredientForm);
         }
-        */
     }
 }
