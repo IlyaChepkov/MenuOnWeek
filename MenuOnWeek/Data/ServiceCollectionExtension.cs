@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MenuOnWeek.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Data;
 
@@ -12,6 +13,7 @@ public static class ServiceCollectionExtension
         services.AddTransient<IIngredientRepository, IngredientRepository>();
         services.AddTransient<IRecipeRepository, RecipeRepository>();
         services.AddTransient<IMenuRepository, MenuRepository>();
+        services.AddTransient<IFileRepository, FileRepository>();
         return services;
     }
 }

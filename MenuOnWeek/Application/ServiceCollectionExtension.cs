@@ -1,5 +1,6 @@
 ﻿using Application.Ingredients;
 using Application.Units;
+using MenuOnWeek.Application.Menus;
 using MenuOnWeek.Application.Recipes;
 using Microsoft.Extensions.DependencyInjection;
 

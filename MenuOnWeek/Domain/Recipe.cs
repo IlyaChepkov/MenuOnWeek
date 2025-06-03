@@ -11,9 +11,11 @@ namespace Domain;
 public sealed class Recipe
 {
 
-    public Recipe(string name)
+    public Recipe(string name, Guid? image, string description)
     {
         Name = name;
+        Image = image;
+        Description = description;
     }
 
     /// <summary>
@@ -34,6 +36,10 @@ public sealed class Recipe
                 .Select(x => (int)Math.Round(x.Key.Price *  x.Key.Table[x.Value.Unit.Required()]) * x.Value.Count)
                 .Sum(); } }
 
+    public string Description { get; set; }
+
+    public Guid? Image { get; set; }
+
     /// <summary>
     /// Хранимые ингредиенты рецепта
     /// </summary>
@@ -45,9 +51,9 @@ public sealed class Recipe
     [JsonIgnore]
     public Dictionary<Ingredient, Quantity> Ingredients { get; set; } = new Dictionary<Ingredient, Quantity>();
 
-    public static Recipe Create(string name)
+    public static Recipe Create(string name, Guid? image, string description)
     {
-        var ingredient = new Recipe(name);
+        var ingredient = new Recipe(name, image, description);
         ingredient.Id = Guid.NewGuid();
         return ingredient;
     }

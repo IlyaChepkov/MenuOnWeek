@@ -1,19 +1,16 @@
-﻿using Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application;
+﻿namespace MenuOnWeek.Application.Recipes;
 
 public interface IRecipeService
 {
-    void Add(Recipe entity);
+    void Add(RecipeCreateModel entity);
 
-    IReadOnlyList<Recipe> GetAll(Func<Recipe, bool> predicate, int offset, int limit);
+    IReadOnlyList<RecipeViewModel> GetAll(int offset, int limit);
 
-    void Update(Recipe entity);
+    void Update(RecipeUpdateModel entity);
 
-    void Remove(Recipe entity);
+    void Remove(Guid id);
+
+    RecipeViewModel GetById(Guid id);
+
+    RecipeViewModel GetByName(string name);
 }

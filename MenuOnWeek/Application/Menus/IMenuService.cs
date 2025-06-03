@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain;
 
-namespace Application;
+namespace MenuOnWeek.Application.Menus;
 
 public interface IMenuService
 {

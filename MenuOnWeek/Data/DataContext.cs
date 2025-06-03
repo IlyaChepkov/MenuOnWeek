@@ -9,6 +9,13 @@ internal sealed class DataContext
 {
 
     private DataOptions dataOptions;
+    public List<Menu> Menus { get; init; } = new List<Menu>();
+
+    public List<Recipe> Recipes { get; init; } = new List<Recipe>();
+
+    public List<Ingredient> Ingredients { get; init; } = new List<Ingredient>();
+
+    public List<Unit> Units { get; init; } = new List<Unit>();
 
     public DataContext(IOptions<DataOptions> dataOptions)
     {
@@ -60,16 +67,6 @@ internal sealed class DataContext
             }
         }
     }
-
-
-
-    public List<Menu> Menus { get; init; } = new List<Menu>();
-
-    public List<Recipe> Recipes { get; init; } = new List<Recipe>();
-
-    public List<Ingredient> Ingredients { get; init; } = new List<Ingredient>();
-
-    public List<Unit> Units { get; init; } = new List<Unit>();
 
     public void Save()
     {

@@ -1,7 +1,4 @@
-﻿using System.Data;
-using System.Xaml.Permissions;
-using Application.Ingredients;
-using Application.Units;
+﻿using Application.Ingredients;
 using MenuOnWeek.Frontend.Ingredient;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
@@ -11,13 +8,11 @@ namespace MenuOnWeek.Frontend;
 public partial class IngredientsControl : UserControl
 {
     private readonly IIngredientService ingredientService;
-    private readonly IUnitService unitService;
     private IngredientForm? ingredientForm;
 
     public IngredientsControl()
     {
         ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
 
         InitializeComponent();
 
@@ -67,7 +62,7 @@ public partial class IngredientsControl : UserControl
         }
 
         IngredientDto dto = ingredientForm.GetIngredientDto();
-        
+
         UpdateIngredientModel ingredient = new UpdateIngredientModel()
         {
             Id = (IngredientsList.SelectedItem as IngredientViewModel).Required().Id,
@@ -83,7 +78,7 @@ public partial class IngredientsControl : UserControl
 
         RefreshIngridentList();
         IngredientsList.SelectedIndex = index;
-        
+
     }
 
     private void IngredientsList_KeyDown(object sender, KeyEventArgs e)
