@@ -22,4 +22,6 @@ public interface IUnitService
     UnitViewModel? GetByName(string name);
 
     IReadOnlyList<UnitViewModel> GetByNamePart(string namePart, int offset, int limit);
+
+    IReadOnlyList<UnitViewModel> GetByIngredient(Guid ingredientId);
 }

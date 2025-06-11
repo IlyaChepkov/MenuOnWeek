@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Data;
 using Application.Ingredients;
 using Application.Units;
-using Domain;
 using MenuOnWeek.Frontend.Ingredient;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
@@ -95,7 +86,7 @@ public partial class IngredientForm : UserControl
                     currentIngredient.Table.Add(unitService.GetById(currentIngredient.UnitId),
                         1 / currentIngredient.Table[removeRequest]);
                     currentIngredient.Table.Remove(removeRequest);
-                    
+
                     break;
                 }
             }
@@ -103,7 +94,7 @@ public partial class IngredientForm : UserControl
 
         currentIngredient.UnitId = unit.Required().Id;
 
-       GridRefresh();
+        GridRefresh();
     } //
 
     private void GridRefresh()

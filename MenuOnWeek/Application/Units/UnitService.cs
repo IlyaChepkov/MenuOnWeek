@@ -1,15 +1,19 @@
-﻿using Data;
+﻿using Application.Ingredients;
+using Data;
 using Domain;
+using Utils;
 
 namespace Application.Units;
 
 internal sealed class UnitService : IUnitService
 {
     private readonly IUnitRepository unitRepository;
+    private readonly IIngredientRepository ingredientRepository;
 
-    public UnitService(IUnitRepository unitRepository)
+    public UnitService(IUnitRepository unitRepository, IIngredientRepository ingredientRepository)
     {
         this.unitRepository = unitRepository;
+        this.ingredientRepository = ingredientRepository;
     }
 
     public void Add(CreateUnitModel createRequest)
@@ -80,10 +84,20 @@ internal sealed class UnitService : IUnitService
             }).ToList();
     }
 
-    UnitViewModel IUnitService.GetById(Guid id)
+    public UnitViewModel GetById(Guid id)
     {
         var unit = unitRepository.GetAll(x => x.Id == id).Single();
         return new UnitViewModel() { Name = unit.Name, Id = unit.Id };
     }
 
+    public IReadOnlyList<UnitViewModel> GetByIngredient(Guid ingredientId)
+    {
+        Ingredient ingredient = ingredientRepository.GetAll(x=> x.Id == ingredientId).Single();
+        List<UnitViewModel> units =
+        [
+            new UnitViewModel() { Id = ingredient.UnitId, Name = ingredient.Unit.Required().Name },
+            .. ingredient.Table.Keys.Select(x => new UnitViewModel() { Id = x.Id, Name = x.Name}),
+        ];
+        return units;
+    }
 }

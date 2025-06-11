@@ -27,7 +27,7 @@ public sealed class Menu
     /// <summary>
     /// Цена меню
     /// </summary>
-    public int Price { get{ return Recipes
+    public double Price { get{ return Recipes
                 .Select(x => x.Recipe.Price * x.Serve).Sum(); } }
 
     /// <summary>

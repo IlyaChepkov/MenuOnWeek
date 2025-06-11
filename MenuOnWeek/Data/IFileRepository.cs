@@ -6,9 +6,9 @@ public interface IFileRepository
 {
     /// <summary>
     /// Добавляет файл в хранилище
-    /// Возвращает id добавленного файла
+    /// Возвращает имя добавленного файла
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    Guid Add(string path);
+    string Add(string path);
 }

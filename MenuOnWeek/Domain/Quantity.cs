@@ -4,7 +4,7 @@ namespace Domain;
 
 public sealed class Quantity
 {
-    public Quantity(int count, Unit unit)
+    public Quantity(double count, Unit unit)
     {
         Count = count;
         Unit = unit;
@@ -13,7 +13,7 @@ public sealed class Quantity
     /// <summary>
     /// Количество
     /// </summary>
-    public int Count { get; set; }
+    public double Count { get; set; }
 
     /// <summary>
     /// Id единицы измерения

@@ -1,4 +1,6 @@
-﻿using Domain;
+﻿// Ignore Spelling: Repository
+
+using Domain;
 
 namespace Data;
 

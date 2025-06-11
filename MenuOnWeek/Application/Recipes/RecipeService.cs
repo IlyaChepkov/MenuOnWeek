@@ -1,4 +1,6 @@
-﻿using Application.Ingredients;
+﻿// Ignore Spelling: limit offset
+
+using Application.Ingredients;
 using Data;
 using Domain;
 using MenuOnWeek.Data;
@@ -23,14 +25,20 @@ public sealed class RecipeService : IRecipeService
 
     public void Add(RecipeCreateModel entity)
     {
-        Guid? imageId = null;
+        string? imageId = null;
         if (!String.IsNullOrWhiteSpace(entity.Image))
         {
             imageId = fileRepository.Add(entity.Image);
         }
         // entity.Image
 
-        var recipe = Recipe.Create(entity.Name, imageId, entity.Description);
+        var recipe = Recipe.Create(entity.Name, imageId, entity.Description) ;
+        recipe.Ingredients = entity.Ingredients.
+            Select(x => (x.Key, new Quantity(x.Value.Count, unitRepository.
+                GetAll(y => y.Id == x.Value.UnitId).
+                Single())
+            { UnitId = x.Value.UnitId, })).
+            ToDictionary(x => ingredientRepository.GetAll(y => y.Id == x.Item1).Single(), x => x.Item2);
 
         recipeRepository.Add(recipe);
     }
@@ -46,6 +54,7 @@ public sealed class RecipeService : IRecipeService
                 Id = x.Id,
                 Name = x.Name,
                 Image = x.Image,
+                Price = x.Price,
                 Description = x.Description,
                 Ingredients = x.Ingredients.
                     Select(y => (y.Key.Id ,new QuantityViewModel()
@@ -74,7 +83,7 @@ public sealed class RecipeService : IRecipeService
 
         if (entity.IsImageChanged)
         {
-            Guid? imageId = null;
+            string? imageId = null;
             if (!String.IsNullOrWhiteSpace(entity.Image))
             {
                 imageId = fileRepository.Add(entity.Image);
@@ -94,6 +103,7 @@ public sealed class RecipeService : IRecipeService
             Name = recipe.Name,
             Description = recipe.Description,
             Image = recipe.Image,
+            Price = recipe.Price,
             Ingredients = recipe.Ingredients.Select(x =>
             (x.Key.Id, new QuantityViewModel()
             {
@@ -112,6 +122,7 @@ public sealed class RecipeService : IRecipeService
             Name = recipe.Name,
             Description = recipe.Description,
             Image = recipe.Image,
+            Price = recipe.Price,
             Ingredients = recipe.Ingredients.Select(x =>
             (x.Key.Id, new QuantityViewModel()
             {

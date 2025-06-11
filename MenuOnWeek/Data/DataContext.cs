@@ -31,11 +31,11 @@ internal sealed class DataContext
         {
             Ingredients[i].Unit = Units.Single(x => x.Id == Ingredients[i].UnitId);
 
-            for (int j = 0; j < Ingredients[i].RawTable.Count; j++)
+            for (int j = 0; j < Ingredients[i].RowTable.Count; j++)
             {
                 Ingredients[i].Table.Add(
-                    Units.Single(x => x.Id == Ingredients[i].RawTable.Keys.ElementAt(j)),
-                    Ingredients[i].RawTable.Values.ElementAt(j));
+                    Units.Single(x => x.Id == Ingredients[i].RowTable.Keys.ElementAt(j)),
+                    Ingredients[i].RowTable.Values.ElementAt(j));
             }
         }
 
@@ -73,10 +73,12 @@ internal sealed class DataContext
         string json = JsonSerializer.Serialize(Units);
         File.WriteAllText(dataOptions.UnitDataStore.Required(), json);
 
-        Ingredients.ForEach(x => x.RawTable = x.Table.Select(y => (y.Key.Id, y.Value)).ToDictionary());
+        Ingredients.ForEach(x => x.RowTable = x.Table.Select(y => (y.Key.Id, y.Value)).ToDictionary());
 
         json = JsonSerializer.Serialize(Ingredients);
         File.WriteAllText(dataOptions.IngredientDataStore.Required(), json);
+
+        Recipes.ForEach(x => x.RawIngredients = x.Ingredients.Select(y => (y.Key.Id, y.Value)).ToDictionary());
 
         json = JsonSerializer.Serialize(Recipes);
         File.WriteAllText(dataOptions.RecipeDataStore.Required(), json);

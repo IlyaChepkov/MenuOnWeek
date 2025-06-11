@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿// Ignore Spelling: name Table Create
+
+using System.Text.Json.Serialization;
 
 namespace Domain;
 
@@ -38,7 +40,7 @@ public sealed class Ingredient
     /// <summary>
     /// Хранимая таблица переводов единиц измерения
     /// </summary>
-    public Dictionary<Guid, double> RawTable { get; set; } = new Dictionary<Guid, double>();
+    public Dictionary<Guid, double> RowTable { get; set; } = new Dictionary<Guid, double>();
 
     /// <summary>
     /// Таблица переводов единиц измерения

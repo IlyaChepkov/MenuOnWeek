@@ -2,7 +2,7 @@
 
 public sealed class QuantityViewModel
 {
-    public int Count { get; set; }
+    public double Count { get; set; }
 
     public Guid UnitId { get; set; }
 }

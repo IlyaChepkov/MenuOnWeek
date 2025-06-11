@@ -9,7 +9,7 @@ namespace MenuOnWeek.Application.Recipes;
 
 public sealed class QuantityModel
 {
-    public int Count { get; set; }
+    public double Count { get; set; }
 
     public Guid UnitId { get; set; } 
 }

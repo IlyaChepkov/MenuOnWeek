@@ -85,10 +85,13 @@ public partial class IngredientsControl : UserControl
     {
         if (e.KeyCode == Keys.Delete)
         {
-            ingredientService.Remove((IngredientsList.SelectedItem as IngredientViewModel).Required().Id);
+            if (IngredientsList.SelectedItem is not null)
+            {
+                ingredientService.Remove((IngredientsList.SelectedItem as IngredientViewModel).Required().Id);
 
-            RefreshIngridentList();
-            Controls.Remove(ingredientForm);
+                RefreshIngridentList();
+                Controls.Remove(ingredientForm);
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ partial class Form1
         menuStrip1.Items.AddRange(new ToolStripItem[] { menuListToolStripMenuItem, recipeListToolStripMenuItem, ingredientsListToolStripMenuItem });
         menuStrip1.Location = new Point(0, 0);
         menuStrip1.Name = "menuStrip1";
-        menuStrip1.Size = new Size(800, 24);
+        menuStrip1.Size = new Size(1097, 24);
         menuStrip1.TabIndex = 5;
         menuStrip1.Text = "menuStrip1";
         // 
@@ -68,7 +68,7 @@ partial class Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 450);
+        ClientSize = new Size(1097, 470);
         Controls.Add(menuStrip1);
         MainMenuStrip = menuStrip1;
         Name = "Form1";

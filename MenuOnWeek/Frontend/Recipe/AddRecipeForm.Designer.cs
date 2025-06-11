@@ -1,6 +1,6 @@
-﻿namespace MenuOnWeek.Frontend.Ingredient
+﻿namespace MenuOnWeek.Frontend.Recipe
 {
-    partial class AddIngredientForm
+    partial class AddRecipeForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,32 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
-            OkButton = new Button();
+            AddButton = new Button();
             SuspendLayout();
             // 
-            // OkButton
+            // AddButton
             // 
-            OkButton.Location = new Point(83, 286);
-            OkButton.Name = "OkButton";
-            OkButton.Size = new Size(75, 23);
-            OkButton.TabIndex = 0;
-            OkButton.Text = "ок";
-            OkButton.UseVisualStyleBackColor = true;
-            OkButton.Click += OkButton_Click;
+            AddButton.Location = new Point(12, 415);
+            AddButton.Name = "AddButton";
+            AddButton.Size = new Size(75, 23);
+            AddButton.TabIndex = 0;
+            AddButton.Text = "ok";
+            AddButton.UseVisualStyleBackColor = true;
+            AddButton.Click += AddButton_Click;
             // 
-            // AddIngredientForm
+            // AddRecipeForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 320);
-            Controls.Add(OkButton);
-            Name = "AddIngredientForm";
-            Text = "AddIngredientForm";
+            ClientSize = new Size(959, 450);
+            Controls.Add(AddButton);
+            Name = "AddRecipeForm";
+            Text = "AddRecipeForm";
             ResumeLayout(false);
         }
 
         #endregion
 
-        private Button OkButton;
+        private Button AddButton;
     }
 }

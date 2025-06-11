@@ -2,12 +2,18 @@
 
 internal sealed class FileRepository : IFileRepository
 {
-    public Guid Add(string path)
+    public string Add(string path)
     {
-        Guid id = Guid.NewGuid();
+        string name = Guid.NewGuid().ToString();
 
-        File.Copy(path, $"{Directory.GetCurrentDirectory()}\\FileStore\\{id.ToString()}{path.Split('.')[^1]}");
+        string extension = "";
 
-        return id;
+        if (path.Split('.').Count() > 1)
+        {
+            extension = '.' + path.Split('.')[^1];
+        }
+        File.Copy(path, $"{Directory.GetCurrentDirectory()}\\FileStore\\{name}{extension}");
+
+        return name + extension;
     }
 }

@@ -29,53 +29,57 @@
         private void InitializeComponent()
         {
             RecipesList = new ListBox();
-            button1 = new Button();
-            button2 = new Button();
+            AddButton = new Button();
+            UpdateButton = new Button();
             SuspendLayout();
             // 
             // RecipesList
             // 
             RecipesList.FormattingEnabled = true;
             RecipesList.ItemHeight = 15;
-            RecipesList.Location = new Point(25, 79);
+            RecipesList.Location = new Point(25, 44);
             RecipesList.Name = "RecipesList";
-            RecipesList.Size = new Size(120, 94);
+            RecipesList.Size = new Size(120, 214);
             RecipesList.TabIndex = 0;
+            RecipesList.SelectedIndexChanged += RecipesList_SelectedIndexChanged;
+            RecipesList.KeyDown += RecipesList_KeyDown;
             // 
-            // button1
+            // AddButton
             // 
-            button1.Location = new Point(54, 50);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 1;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
+            AddButton.Location = new Point(25, 15);
+            AddButton.Name = "AddButton";
+            AddButton.Size = new Size(57, 23);
+            AddButton.TabIndex = 1;
+            AddButton.Text = "+";
+            AddButton.UseVisualStyleBackColor = true;
+            AddButton.Click += AddButton_Click;
             // 
-            // button2
+            // UpdateButton
             // 
-            button2.Location = new Point(155, 50);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 2;
-            button2.Text = "button2";
-            button2.UseVisualStyleBackColor = true;
+            UpdateButton.Location = new Point(88, 15);
+            UpdateButton.Name = "UpdateButton";
+            UpdateButton.Size = new Size(57, 23);
+            UpdateButton.TabIndex = 2;
+            UpdateButton.Text = "Update";
+            UpdateButton.UseVisualStyleBackColor = true;
+            UpdateButton.Click += UpdateButton_Click;
             // 
             // RecipeControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(button2);
-            Controls.Add(button1);
+            Controls.Add(UpdateButton);
+            Controls.Add(AddButton);
             Controls.Add(RecipesList);
             Name = "RecipeControl";
-            Size = new Size(849, 539);
+            Size = new Size(1225, 539);
             ResumeLayout(false);
         }
 
         #endregion
 
         private ListBox RecipesList;
-        private Button button1;
-        private Button button2;
+        private Button AddButton;
+        private Button UpdateButton;
     }
 }

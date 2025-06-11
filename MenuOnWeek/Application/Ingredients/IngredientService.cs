@@ -1,4 +1,6 @@
-﻿using Data;
+﻿// Ignore Spelling: Repository
+
+using Data;
 using Domain;
 using Utils;
 
