@@ -4,19 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MenuOnWeek.Domain;
 
 namespace Domain;
 
 public sealed class MenuElement
 {
 
-    public MenuElement(Recipe recipe, int serve, DateTime date)
+    public MenuElement(Recipe recipe, int serve, DayOfWeek date, Meal meal)
     {
 
         Recipe = recipe;
         Serve = serve;
         Date = date;
-
+        Meal = meal;
     }
 
     /// <summary>
@@ -38,6 +39,8 @@ public sealed class MenuElement
     /// <summary>
     /// Дата подачи
     /// </summary>
-    public DateTime Date { get; set; }
+    public DayOfWeek Date { get; set; }
 
+
+    public Meal Meal { get; set; }
 }

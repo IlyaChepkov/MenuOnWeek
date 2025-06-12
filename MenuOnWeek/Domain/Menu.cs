@@ -9,9 +9,11 @@ namespace Domain;
 public sealed class Menu
 {
 
-    public Menu(string name)
+    public Menu(string name, List<MenuElement> recipes, Guid id)
     {
+        Id = id;
         Name = name;
+        Recipes = recipes;
     }
 
     /// <summary>
@@ -35,10 +37,9 @@ public sealed class Menu
     /// </summary>
     public List<MenuElement> Recipes { get; set; } = new List<MenuElement>();
 
-    public static Menu Create(string name)
+    public static Menu Create(string name, List<MenuElement> recipes)
     {
-        var ingredient = new Menu(name);
-        ingredient.Id = Guid.NewGuid();
-        return ingredient;
+        var menu = new Menu(name, recipes, Guid.NewGuid());
+        return menu;
     }
 }

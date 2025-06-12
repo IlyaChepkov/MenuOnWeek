@@ -8,8 +8,6 @@ namespace MenuOnWeek.Frontend.Recipe;
 
 public partial class RecipeForm : UserControl
 {
-
-    private IRecipeService recipeService;
     private IIngredientService ingredientService;
     private IUnitService unitService;
     private RecipeViewModel currentRecipe;
@@ -23,7 +21,6 @@ public partial class RecipeForm : UserControl
     {
         defaultImage = System.Drawing.Image.
                 FromFile("C:\\Users\\user\\Documents\\MenuOnWeek\\MenuOnWeek\\Frontend\\no-photo--lg.png");
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
         ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
         unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
         InitializeComponent();
@@ -44,7 +41,6 @@ public partial class RecipeForm : UserControl
     {
         defaultImage = System.Drawing.Image.
                 FromFile("C:\\Users\\user\\Documents\\MenuOnWeek\\MenuOnWeek\\Frontend\\no-photo--lg.png");
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
         ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
         unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
         InitializeComponent();

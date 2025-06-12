@@ -6,14 +6,12 @@ internal sealed class FileRepository : IFileRepository
     {
         string name = Guid.NewGuid().ToString();
 
-        string extension = "";
-
         if (path.Split('.').Count() > 1)
         {
-            extension = '.' + path.Split('.')[^1];
+            name += '.' + path.Split('.')[^1];
         }
-        File.Copy(path, $"{Directory.GetCurrentDirectory()}\\FileStore\\{name}{extension}");
+        File.Copy(path, $"{Directory.GetCurrentDirectory()}\\FileStore\\{name}");
 
-        return name + extension;
+        return name;
     }
 }

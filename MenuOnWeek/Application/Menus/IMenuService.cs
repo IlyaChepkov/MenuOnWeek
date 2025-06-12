@@ -10,11 +10,11 @@ namespace MenuOnWeek.Application.Menus;
 
 public interface IMenuService
 {
-    void Add(Menu entity);
+    void Add(CreateMenuModel entity);
 
-    IReadOnlyList<Menu> GetAll(Func<Menu, bool> predicate, int offset, int limit);
+    IReadOnlyList<MenuViewModel> GetAll(int offset, int limit);
 
-    void Update(Menu entity);
+    void Update(MenuUpdateModel entity);
 
-    void Remove(Menu entity);
+    void Remove(Guid entity);
 }
