@@ -83,6 +83,8 @@ internal sealed class DataContext
         json = JsonSerializer.Serialize(Recipes);
         File.WriteAllText(dataOptions.RecipeDataStore.Required(), json);
 
+        Menus.ForEach(x => x.Recipes.ForEach(y => y.RecipeId = y.Recipe.Id));
+
         json = JsonSerializer.Serialize(Menus);
         File.WriteAllText(dataOptions.MenuDataStore.Required(), json);
     }

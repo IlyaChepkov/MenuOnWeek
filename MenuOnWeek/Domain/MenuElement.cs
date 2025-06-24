@@ -11,7 +11,7 @@ namespace Domain;
 public sealed class MenuElement
 {
 
-    public MenuElement(Recipe recipe, int serve, DayOfWeek date, Meal meal)
+    public MenuElement(Recipe recipe, int serve, DaysOfWeek? date, Meal? meal)
     {
 
         Recipe = recipe;
@@ -39,8 +39,8 @@ public sealed class MenuElement
     /// <summary>
     /// Дата подачи
     /// </summary>
-    public DayOfWeek Date { get; set; }
+    public DaysOfWeek? Date { get; set; }
 
 
-    public Meal Meal { get; set; }
+    public Meal? Meal { get; set; }
 }

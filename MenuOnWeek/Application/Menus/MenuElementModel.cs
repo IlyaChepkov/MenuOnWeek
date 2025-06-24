@@ -8,7 +8,7 @@ public sealed class MenuElementModel
 
     public int ServeCount { get; set; }
 
-    public DayOfWeek Date {  get; set; }
+    public DaysOfWeek? Date {  get; set; }
 
-    public Meal Meal { get; set; }
+    public Meal? Meal { get; set; }
 }

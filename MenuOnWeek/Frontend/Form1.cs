@@ -1,4 +1,5 @@
-﻿using MenuOnWeek.Frontend.Recipe;
+﻿using MenuOnWeek.Frontend.Menu;
+using MenuOnWeek.Frontend.Recipe;
 
 namespace MenuOnWeek.Frontend;
 
@@ -31,6 +32,18 @@ public partial class Form1 : Form
             nowPanel.Dispose();
         }
         nowPanel = new RecipeControl();
+        nowPanel.Location = new Point(0, 25);
+        Controls.Add(nowPanel);
+    }
+
+    private void menuListToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        if (nowPanel is not null)
+        {
+            Controls.Remove(nowPanel);
+            nowPanel.Dispose();
+        }
+        nowPanel = new MenuControl();
         nowPanel.Location = new Point(0, 25);
         Controls.Add(nowPanel);
     }

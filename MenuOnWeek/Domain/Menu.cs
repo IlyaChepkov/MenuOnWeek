@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MenuOnWeek.Domain;
 
 namespace Domain;
 
 public sealed class Menu
 {
 
-    public Menu(string name, List<MenuElement> recipes, Guid id)
+    public Menu(string name, List<MenuElement> recipes, Guid id, MenuType menuType)
     {
         Id = id;
         Name = name;
         Recipes = recipes;
+        MenuType = menuType;
     }
 
     /// <summary>
@@ -27,6 +30,11 @@ public sealed class Menu
     public string Name { get; set; }
 
     /// <summary>
+    /// Тип меню
+    /// </summary>
+    public MenuType MenuType { get; set; }
+
+    /// <summary>
     /// Цена меню
     /// </summary>
     public double Price { get{ return Recipes
@@ -37,9 +45,9 @@ public sealed class Menu
     /// </summary>
     public List<MenuElement> Recipes { get; set; } = new List<MenuElement>();
 
-    public static Menu Create(string name, List<MenuElement> recipes)
+    public static Menu Create(string name, List<MenuElement> recipes, MenuType menuType)
     {
-        var menu = new Menu(name, recipes, Guid.NewGuid());
+        var menu = new Menu(name, recipes, Guid.NewGuid(), menuType);
         return menu;
     }
 }

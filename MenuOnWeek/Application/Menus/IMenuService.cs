@@ -17,4 +17,6 @@ public interface IMenuService
     void Update(MenuUpdateModel entity);
 
     void Remove(Guid entity);
+
+    MenuViewModel GetByName(string name);
 }

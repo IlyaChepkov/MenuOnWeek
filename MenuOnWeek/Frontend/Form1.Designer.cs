@@ -49,6 +49,7 @@ partial class Form1
         menuListToolStripMenuItem.Name = "menuListToolStripMenuItem";
         menuListToolStripMenuItem.Size = new Size(91, 20);
         menuListToolStripMenuItem.Text = "Реестр меню";
+        menuListToolStripMenuItem.Click += menuListToolStripMenuItem_Click;
         // 
         // recipeListToolStripMenuItem
         // 

@@ -1,6 +1,5 @@
 ﻿using Data;
 using Domain;
-using MenuOnWeek.Application.Recipes;
 
 namespace MenuOnWeek.Application.Menus;
 
@@ -24,7 +23,8 @@ internal sealed class MenuService : IMenuService
                 x.ServeCount,
                 x.Date,
                 x.Meal))
-            .ToList());
+            .ToList(),
+            entity.MenuType);
         menuRepository.Add(menu);
     }
 
@@ -44,8 +44,11 @@ internal sealed class MenuService : IMenuService
                     RecipeId = y.RecipeId,
                     Meal = y.Meal,
                     ServeCount = y.Serve,
-                    Date = y.Date }
-                ).ToList()})
+                    Date = y.Date
+                }
+                ).ToList(),
+                MenuType = x.MenuType
+            })
             .ToList();
     }
 
@@ -65,6 +68,27 @@ internal sealed class MenuService : IMenuService
                 x.Date,
                 x.Meal))
             .ToList();
+        menu.MenuType = entity.MenuType;
         menuRepository.Update(menu);
     }
+
+    public MenuViewModel GetByName(string name)
+    {
+        var menu = menuRepository.GetAll(x => x.Name == name).Single();
+        return new MenuViewModel()
+        {
+            Id = menu.Id,
+            Name = menu.Name,
+            Price = menu.Price,
+            Recipes = menu.Recipes.Select(x => new MenuElementViewModel()
+            {
+                RecipeId = x.RecipeId,
+                Meal = x.Meal,
+                ServeCount = x.Serve,
+                Date = x.Date
+            }).ToList(),
+            MenuType = menu.MenuType
+        };
+    }
 }
+

@@ -52,7 +52,7 @@ public partial class RecipeForm : UserControl
         if (recipe.Image is not null)
         {
             var image = $"{Directory.GetCurrentDirectory()}\\FileStore\\{recipe.Image.ToString().Required()}";
-            Image.Image = System.Drawing.Image.                          // тута ошибка
+            Image.Image = System.Drawing.Image.                          // тут ошибка
                 FromFile(image);
             currentImage = image;
         }
