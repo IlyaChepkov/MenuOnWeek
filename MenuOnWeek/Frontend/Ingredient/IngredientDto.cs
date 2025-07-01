@@ -6,4 +6,4 @@ internal sealed record IngredientDto(
     string Name,
     int Price,
     Guid UnitId,
-    Dictionary<UnitViewModel, double> Table);
+    Dictionary<Guid, double> Table);

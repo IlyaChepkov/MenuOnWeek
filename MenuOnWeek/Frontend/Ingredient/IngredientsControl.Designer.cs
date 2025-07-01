@@ -31,6 +31,9 @@ partial class IngredientsControl
         IngredientsList = new ListBox();
         AddButton = new Button();
         UpdateButton = new Button();
+        statusStrip1 = new StatusStrip();
+        toolStripStatusLabel1 = new ToolStripStatusLabel();
+        statusStrip1.SuspendLayout();
         SuspendLayout();
         // 
         // IngredientsList
@@ -64,16 +67,35 @@ partial class IngredientsControl
         UpdateButton.UseVisualStyleBackColor = true;
         UpdateButton.Click += UpdateButton_Click;
         // 
+        // statusStrip1
+        // 
+        statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+        statusStrip1.Location = new Point(0, 473);
+        statusStrip1.Name = "statusStrip1";
+        statusStrip1.Size = new Size(890, 22);
+        statusStrip1.TabIndex = 4;
+        statusStrip1.Text = "statusStrip1";
+        // 
+        // toolStripStatusLabel1
+        // 
+        toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+        toolStripStatusLabel1.Size = new Size(118, 17);
+        toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+        // 
         // IngredientsControl
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
+        Controls.Add(statusStrip1);
         Controls.Add(UpdateButton);
         Controls.Add(AddButton);
         Controls.Add(IngredientsList);
         Name = "IngredientsControl";
         Size = new Size(890, 495);
+        statusStrip1.ResumeLayout(false);
+        statusStrip1.PerformLayout();
         ResumeLayout(false);
+        PerformLayout();
     }
 
     #endregion
@@ -81,4 +103,6 @@ partial class IngredientsControl
     private ListBox IngredientsList;
     private Button AddButton;
     private Button UpdateButton;
+    private StatusStrip statusStrip1;
+    private ToolStripStatusLabel toolStripStatusLabel1;
 }

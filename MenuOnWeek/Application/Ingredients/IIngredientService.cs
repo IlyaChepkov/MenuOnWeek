@@ -19,7 +19,7 @@ public interface IIngredientService
 
     IngredientViewModel GetById(Guid id);
 
-    IngredientViewModel GetByName(string name);
+    IngredientViewModel? GetByName(string name);
 
     IReadOnlyList<IngredientViewModel> GetByPartName(string namePart, int offset, int limit);
 }

@@ -20,6 +20,22 @@ public partial class AddRecipeForm : Form
     {
         var recipeDto = recipeForm.GetRecipeDto();
 
+        if (String.IsNullOrEmpty(recipeDto.Name))
+        {
+            statusStrip1.Items[0].Text = "У рецепта нет имени";
+            return;
+        }
+        if (recipeDto.Ingredients.Count < 1)
+        {
+            statusStrip1.Items[0].Text = "У рецепта нет ингредиентов";
+            return;
+        }
+        if (recipeDto.Ingredients.Any(x => x.Key == Guid.Empty || x.Value.Count == 0 || x.Value.UnitId == Guid.Empty))
+        {
+            statusStrip1.Items[0].Text = "Заполнены не все ячейки таблицы";
+            return;
+        }
+
         var createRequest = new RecipeCreateModel()
         {
             Name = recipeDto.Name,

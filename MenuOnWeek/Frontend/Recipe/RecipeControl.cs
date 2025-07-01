@@ -1,4 +1,6 @@
-﻿using Application.Ingredients;
+﻿using System.Windows.Forms;
+using Application.Ingredients;
+using MenuOnWeek.Application.Menus;
 using MenuOnWeek.Application.Recipes;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
@@ -8,11 +10,13 @@ namespace MenuOnWeek.Frontend.Recipe;
 public sealed partial class RecipeControl : UserControl
 {
     private readonly IRecipeService recipeService;
+    private readonly IMenuService menuService;
     private RecipeForm? recipeForm;
 
     public RecipeControl()
     {
         recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
+        menuService = Program.ServiceProvider.GetRequiredService<IMenuService>();
 
         InitializeComponent();
 
@@ -58,6 +62,22 @@ public sealed partial class RecipeControl : UserControl
         {
             var recipeDto = recipeForm.GetRecipeDto();
 
+            if (String.IsNullOrEmpty(recipeDto.Name))
+            {
+                statusStrip1.Items[0].Text = "У рецепта нет имени";
+                return;
+            }
+            if (recipeDto.Ingredients.Count < 1)
+            {
+                statusStrip1.Items[0].Text = "У рецепта нет ингредиентов";
+                return;
+            }
+            if (recipeDto.Ingredients.Any(x => x.Key == Guid.Empty || x.Value.Count == 0 || x.Value.UnitId == Guid.Empty))
+            {
+                statusStrip1.Items[0].Text = "Заполнены не все ячейки таблицы";
+                return;
+            }
+
             var updateRequest = new RecipeUpdateModel()
             {
                 Id = recipeService.GetByName((RecipesList.SelectedItem as string).Required()).Id,
@@ -84,6 +104,11 @@ public sealed partial class RecipeControl : UserControl
         {
             if (RecipesList.SelectedItem is not null)
             {
+                if (menuService.GetAll(0, 1000).Any(x => x.Recipes.Any(y => y.RecipeId == recipeService.GetByName((RecipesList.SelectedItem as string).Required()).Id)))
+                {
+                    statusStrip1.Items[0].Text = "Этот рецепт используется";
+                    return;
+                }
                 recipeService.Remove(recipeService.GetByName(RecipesList.SelectedItem.Required().ToString().Required()).Id);
 
                 RefreshRecipesList();

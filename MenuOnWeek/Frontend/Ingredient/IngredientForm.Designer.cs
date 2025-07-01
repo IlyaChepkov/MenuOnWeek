@@ -50,7 +50,8 @@
             UnitsTable.Name = "UnitsTable";
             UnitsTable.Size = new Size(240, 209);
             UnitsTable.TabIndex = 7;
-            UnitsTable.RowsAdded += UnitsTable_RowsAdded;
+            UnitsTable.CellEndEdit += UnitsTable_CellEndEdit;
+            UnitsTable.RowsRemoved += UnitsTable_RowsRemoved;
             // 
             // Unit
             // 

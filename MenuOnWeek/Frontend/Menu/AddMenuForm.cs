@@ -37,11 +37,14 @@ public partial class AddMenuForm : Form
             return;
         }
         if (menuDto.Recipes.Any(x => (menuDto.MenuType == MenuType.MenuOnWeek & x.Date == null)
-            || (menuDto.MenuType != MenuType.MenuOnEvent & x.Meal == null)))
+            || (menuDto.MenuType != MenuType.MenuOnEvent & x.Meal == null) || (x.ServeCount == 0)))
         {
             statusStrip1.Items[0].Text = "Заполнены не все ячейки таблицы";
             return;
         }
+
+        statusStrip1.Items[0].Text = "";
+
         var addMenuModel = new CreateMenuModel()
         {
             Name = menuDto.Name,

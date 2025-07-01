@@ -31,11 +31,13 @@ public sealed class Recipe
     /// <summary>
     /// Цена рецепта
     /// </summary>
-    public double Price { get {
+    public double Price { get
+        {
             return Ingredients
                 .Select(x => Math.Round((x.Key.Unit == x.Value.Unit ? x.Key.Price : x.Key.Table[x.Value.Unit.Required()] * x.Key.Price)) * x.Value.Count)
                 .Select(x => x)
-                .Sum(); } }
+                .Sum();
+        } }
 
     public string Description { get; set; }
 

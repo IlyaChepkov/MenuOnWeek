@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: Repository
 
+using Application.Units;
 using Data;
 using Domain;
 using Utils;
@@ -34,7 +35,7 @@ internal sealed class IngredientService : IIngredientService
         var unit = unitRepository.GetAll(x => x.Id == createRequest.UnitId).Single();
         var ingredient = Ingredient
             .Create(createRequest.Name, createRequest.Price, unit, createRequest.Table
-                .Select(x => (new Unit(x.Key.Name) { Id = x.Key.Id, }, x.Value))
+                .Select(x => (unitRepository.GetAll(y => y.Id == x.Key.Id).Single(), x.Value))
                 .ToDictionary(x => x.Item1, x => x.Item2));
 
         MainUnitBaseChecker(ingredient);
@@ -80,7 +81,7 @@ internal sealed class IngredientService : IIngredientService
             }
         }
         ingredient.Table = updateRequest.Table
-            .Select(x => (new Unit(x.Key.Name) { Id = x.Key.Id, }, x.Value))
+            .Select(x => (unitRepository.GetAll(y => y.Id == x.Key.Id).Single(), x.Value))
             .ToDictionary(x => x.Item1, x => x.Item2);
 
         MainUnitBaseChecker(ingredient);
@@ -95,10 +96,24 @@ internal sealed class IngredientService : IIngredientService
         return ingredient.ConvertToIngredientViewModel();
     }
 
-    IngredientViewModel IIngredientService.GetByName(string name)
+    IngredientViewModel? IIngredientService.GetByName(string name)
     {
-        var ingredient = ingredientRepository.GetAll(x => x.Name == name).Single();
-        return ingredient.ConvertToIngredientViewModel();
+        var ingredient = ingredientRepository.GetAll(x => x.Name == name).SingleOrDefault();
+        if (ingredient is null)
+        {
+            return null;
+        }
+        return new IngredientViewModel()
+        {
+            Id = ingredient.Id,
+            Name = ingredient.Name,
+            Price = ingredient.Price,
+            Table = ingredient.Table
+               .Select(y => (y.Value, new UnitViewModel() { Id = y.Key.Id, Name = y.Key.Name }))
+               .ToDictionary(y => y.Item2, y => y.Item1),
+            UnitId = ingredient.UnitId
+        };
+        ;
     }
 
     IReadOnlyList<IngredientViewModel> IIngredientService.GetByPartName(string namePart, int offset, int limit)

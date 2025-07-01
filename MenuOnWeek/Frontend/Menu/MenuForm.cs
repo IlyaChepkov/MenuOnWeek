@@ -214,10 +214,14 @@ public partial class MenuForm : UserControl
             {
                 meal = mealList.FirstOrDefault(x => x.MealName == cells[2].Value.ToString()).Required().MealType;
             }
-
+            int count = 0;
+            if (cells[3].Value is not null)
+            {
+               Int32.TryParse(cells[3].Value.ToString().Required(), out count);
+            }
             menuDto.Recipes.Add(new MenuElementDto(
                 recipeService.GetByName(cells[0].Value.ToString().Required()).Id,
-                Int32.Parse(cells[3].Value.ToString().Required()),
+                count,
                 day,
                 meal));
         }

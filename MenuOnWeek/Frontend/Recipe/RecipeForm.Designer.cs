@@ -51,7 +51,7 @@
             IngredientsTable.Size = new Size(342, 288);
             IngredientsTable.TabIndex = 0;
             IngredientsTable.CellEndEdit += IngredientsTable_CellEndEdit;
-            IngredientsTable.RowsAdded += IngredientsTable_RowsAdded;
+            IngredientsTable.RowsRemoved += IngredientsTable_RowsRemoved;
             // 
             // Ingredient
             // 
@@ -119,7 +119,7 @@
             Controls.Add(Image);
             Controls.Add(IngredientsTable);
             Name = "RecipeForm";
-            Size = new Size(819, 307);
+            Size = new Size(819, 348);
             ((System.ComponentModel.ISupportInitialize)IngredientsTable).EndInit();
             ((System.ComponentModel.ISupportInitialize)Image).EndInit();
             ResumeLayout(false);
