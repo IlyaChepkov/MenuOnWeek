@@ -25,7 +25,7 @@ public sealed partial class RecipeControl : UserControl
 
     private void RefreshRecipesList()
     {
-        var recipes = recipeService.GetAll(0, 100).Select(x => x.Name).ToArray();
+        var recipes = recipeService.GetAll(0, 100).Select(x => x.Name).OrderBy(x => x).ToArray();
         RecipesList.Items.Clear();
         RecipesList.Items.AddRange(recipes);
     }

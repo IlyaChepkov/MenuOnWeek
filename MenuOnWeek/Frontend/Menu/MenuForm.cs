@@ -135,14 +135,24 @@ public partial class MenuForm : UserControl
                 {
                     case MenuType.MenuOnWeek:
                         {
-                            dateComboBoxCell.Value ??= daysOfWeekList.Single(x => x.DayName == new DaysOfWeekLocalizationType(currentMenu.Recipes[i].Date).DayName)?.ToString();
-                            mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                            if (currentMenu.Recipes[i].Date is not null)
+                            {
+                                dateComboBoxCell.Value ??= daysOfWeekList.Single(x => x.DayName == new DaysOfWeekLocalizationType(currentMenu.Recipes[i].Date).DayName)?.ToString();
+                            }
+                            if (currentMenu.Recipes[i].Meal is not null)
+                            {
+                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                            }
+                            
                         }
                         break;
 
                     case MenuType.MenuOnDay:
                         {
-                            mealComboBoxCell.Value ??= mealList.SingleOrDefault(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                            if (currentMenu.Recipes[i].Meal is not null)
+                            {
+                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                            }
                         }
                         break;
                 }

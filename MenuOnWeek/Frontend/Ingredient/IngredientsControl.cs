@@ -1,4 +1,5 @@
-﻿using Application.Ingredients;
+﻿using System.Collections.Immutable;
+using Application.Ingredients;
 using Application.Units;
 using MenuOnWeek.Application.Recipes;
 using MenuOnWeek.Domain;
@@ -29,7 +30,7 @@ public partial class IngredientsControl : UserControl
 
     private void RefreshIngridentList()
     {
-        var ingredients = ingredientService.GetAll(0, 100).ToArray();
+        var ingredients = ingredientService.GetAll(0, 100).OrderBy(x => x.Name).ToArray();
         IngredientsList.Items.Clear();
         IngredientsList.Items.AddRange(ingredients);
     }

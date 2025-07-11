@@ -34,7 +34,7 @@ public sealed class Recipe
     public double Price { get
         {
             return Ingredients
-                .Select(x => Math.Round((x.Key.Unit == x.Value.Unit ? x.Key.Price : x.Key.Table[x.Value.Unit.Required()] * x.Key.Price)) * x.Value.Count)
+                .Select(x => Math.Round((x.Key.Unit == x.Value.Unit ? x.Key.Price : x.Key.Table[x.Value.Unit.Required()] * x.Key.Price) * x.Value.Count))
                 .Select(x => x)
                 .Sum();
         } }

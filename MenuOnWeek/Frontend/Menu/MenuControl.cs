@@ -33,7 +33,7 @@ namespace MenuOnWeek.Frontend.Menu
         {
             MenusList.Items.Clear();
 
-            MenusList.Items.AddRange(menuService.GetAll(0, 100).Select(x => x.Name).ToArray());
+            MenusList.Items.AddRange(menuService.GetAll(0, 100).Select(x => x.Name).OrderBy(x => x).ToArray());
         }
 
         private void AddButton_Click(object sender, EventArgs e)
@@ -78,6 +78,11 @@ namespace MenuOnWeek.Frontend.Menu
                     }).ToList()
                 };
                 menuService.Update(updateRequest);
+
+                Controls.Remove(menuForm);
+                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required()));
+                Controls.Add(menuForm);
+                menuForm.Location = new Point(200, 5);
             }
         }
 

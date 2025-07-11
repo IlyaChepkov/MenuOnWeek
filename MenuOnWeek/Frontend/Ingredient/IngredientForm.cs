@@ -174,7 +174,7 @@ public partial class IngredientForm : UserControl
         {
             if (UnitsTable.Rows[e.RowIndex].Cells[0].Value is not null)
             {
-                if (e.RowIndex + 1 < UnitsTable.Rows.Count)
+                if (e.RowIndex + 1 < usingUnits.Count)
                 {
                     usingUnits.RemoveAt(e.RowIndex);
                 }

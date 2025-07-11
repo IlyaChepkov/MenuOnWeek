@@ -70,9 +70,9 @@
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-            statusStrip1.Location = new Point(0, 517);
+            statusStrip1.Location = new Point(0, 397);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1225, 22);
+            statusStrip1.Size = new Size(1020, 22);
             statusStrip1.TabIndex = 3;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -86,12 +86,13 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoSize = true;
             Controls.Add(statusStrip1);
             Controls.Add(UpdateButton);
             Controls.Add(AddButton);
             Controls.Add(RecipesList);
             Name = "RecipeControl";
-            Size = new Size(1225, 539);
+            Size = new Size(1020, 419);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
