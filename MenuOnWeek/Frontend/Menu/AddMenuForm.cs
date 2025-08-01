@@ -48,7 +48,7 @@ public partial class AddMenuForm : Form
         var addMenuModel = new CreateMenuModel()
         {
             Name = menuDto.Name,
-            Recipes = menuDto.Recipes.Select(x => new MenuElementModel()
+            MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
             {
                 RecipeId = x.RecipeId,
                 ServeCount = x.ServeCount,

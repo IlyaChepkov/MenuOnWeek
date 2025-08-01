@@ -1,4 +1,6 @@
-﻿namespace MenuOnWeek.Data;
+﻿
+
+namespace Data;
 
 internal sealed class FileRepository : IFileRepository
 {

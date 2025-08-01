@@ -69,7 +69,7 @@ namespace MenuOnWeek.Frontend.Menu
                     Id = menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required()).Id,
                     Name = menuDto.Name,
                     MenuType = menuDto.MenuType,
-                    Recipes = menuDto.Recipes.Select(x => new MenuElementModel()
+                    MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
                     {
                         RecipeId = x.RecipeId,
                         Date = x.Date,

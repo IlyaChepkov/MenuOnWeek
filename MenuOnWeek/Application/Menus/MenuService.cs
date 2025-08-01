@@ -1,5 +1,7 @@
 ﻿using Data;
 using Domain;
+using MenuOnWeek.Application.Recipes;
+using MenuOnWeek.Domain;
 
 namespace MenuOnWeek.Application.Menus;
 
@@ -7,25 +9,23 @@ internal sealed class MenuService : IMenuService
 {
     private readonly IMenuRepository menuRepository;
     private readonly IRecipeRepository recipeRepository;
+    private readonly IMenuRecipesRepository menuRecipesRepository;
 
-    public MenuService(IMenuRepository menuRepository, IRecipeRepository recipeRepository)
+    public MenuService(IMenuRepository menuRepository, IRecipeRepository recipeRepository, IMenuRecipesRepository menuRecipesRepository)
     {
         this.menuRepository = menuRepository;
         this.recipeRepository = recipeRepository;
+        this.menuRecipesRepository = menuRecipesRepository;
     }
 
     public void Add(CreateMenuModel entity)
     {
         var menu = Menu.Create(
             entity.Name,
-            entity.Recipes.Select(
-                x => new MenuElement(recipeRepository.GetAll(y => y.Id == x.RecipeId).Single(),
-                x.ServeCount,
-                x.Date,
-                x.Meal))
-            .ToList(),
             entity.MenuType);
         menuRepository.Add(menu);
+
+        menuRecipesRepository.AddRange(entity.MenuRecipes.Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId), x.ServeCount, x.Date, x.Meal)).ToList());
     }
 
     public IReadOnlyList<MenuViewModel> GetAll(int offset, int limit)
@@ -39,7 +39,7 @@ internal sealed class MenuService : IMenuService
                 Id = x.Id,
                 Name = x.Name,
                 Price = x.Price,
-                Recipes = x.Recipes.Select(y => new MenuElementViewModel()
+                Recipes = x.MenuRecipes.Select(y => new MenuElementViewModel()
                 {
                     RecipeId = y.RecipeId,
                     Meal = y.Meal,
@@ -58,17 +58,40 @@ internal sealed class MenuService : IMenuService
         menuRepository.Remove(menu);
     }
 
-    public void Update(MenuUpdateModel entity)
+    public void Update(MenuUpdateModel updateRequest)
     {
-        var menu = menuRepository.GetAll(x => x.Id == entity.Id).Single();
-        menu.Name = entity.Name;
-        menu.Recipes = entity.Recipes.Select(
-                x => new MenuElement(recipeRepository.GetAll(y => y.Id == x.RecipeId).Single(),
-                x.ServeCount,
-                x.Date,
-                x.Meal))
+        var menu = menuRepository.GetById(updateRequest.Id);
+        menu.Name = updateRequest.Name;
+        //menu.MenuRecipes = entity.MenuRecipes.Select(x => MenuRecipes.Create(
+        //    menu.Id,
+        //    recipeRepository.GetAll(y => y.Id == x.RecipeId).Single(),
+        //    x.ServeCount,
+        //    x.Date,
+        //    x.Meal))
+        //    .ToList();
+        menu.MenuType = updateRequest.MenuType;
+
+        List<MenuRecipes> deleteList = menu.MenuRecipes.Where(x => !updateRequest.MenuRecipes.Any(y => y.RecipeId == x.RecipeId)).ToList();
+
+        menuRecipesRepository.RemoveRange(deleteList);
+
+        List<MenuRecipes> updateList = menu.MenuRecipes.Where(x => updateRequest.MenuRecipes.Any(y => y.RecipeId == x.RecipeId)).ToList();
+        updateList.ForEach(x =>
+        {
+            x.Date = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).Date;
+            x.Meal = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).Meal;
+            x.Serve = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).ServeCount;
+        });
+
+        menuRecipesRepository.UpdateRange(updateList);
+
+        List<MenuRecipes> addList = updateRequest.MenuRecipes
+            .Where(x => !menu.MenuRecipes.Any(y => y.RecipeId == x.RecipeId))
+            .Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId), x.ServeCount, x.Date, x.Meal))
             .ToList();
-        menu.MenuType = entity.MenuType;
+
+        menuRecipesRepository.AddRange(addList);
+
         menuRepository.Update(menu);
     }
 
@@ -80,7 +103,7 @@ internal sealed class MenuService : IMenuService
             Id = menu.Id,
             Name = menu.Name,
             Price = menu.Price,
-            Recipes = menu.Recipes.Select(x => new MenuElementViewModel()
+            Recipes = menu.MenuRecipes.Select(x => new MenuElementViewModel()
             {
                 RecipeId = x.RecipeId,
                 Meal = x.Meal,

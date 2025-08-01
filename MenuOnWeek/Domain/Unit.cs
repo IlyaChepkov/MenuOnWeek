@@ -1,11 +1,13 @@
-﻿namespace Domain;
+﻿using MenuOnWeek.Domain;
+
+namespace Domain;
 
 /// <summary>
 /// Сущность единицы измерения
 /// </summary>
-public sealed class Unit
+public sealed class Unit : IEntityWithId
 {
-    public Unit(string name)
+    private Unit(string name)
     {
         Name = name;
     }

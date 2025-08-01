@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Data;
 using Domain;
 
-namespace Data;
+namespace MenuOnWeek.Application.Ingredients;
 
-public interface IIngredientRepository : IBaseRepository<Ingredient>
+public interface IIngredientUnitsRepository : IBaseRepository<IngredientUnits>
 {
 }

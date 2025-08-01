@@ -1,4 +1,4 @@
-﻿namespace MenuOnWeek.Data;
+﻿namespace Data;
 /// <summary>
 /// Файловый репозиторий
 /// </summary>

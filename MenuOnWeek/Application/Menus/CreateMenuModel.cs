@@ -8,5 +8,5 @@ public sealed class CreateMenuModel
 
     public MenuType MenuType { get; set; }
 
-    public List<MenuElementModel> Recipes { get; set; } = new List<MenuElementModel>();
+    public List<MenuElementModel> MenuRecipes { get; set; } = new List<MenuElementModel>();
 }

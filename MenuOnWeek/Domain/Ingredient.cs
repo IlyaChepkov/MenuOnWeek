@@ -1,16 +1,17 @@
 ﻿// Ignore Spelling: name Table Create
 
-using System.Text.Json.Serialization;
+using MenuOnWeek.Domain;
 
 namespace Domain;
 
-public sealed class Ingredient
+public sealed class Ingredient : IEntityWithId
 {
-    public Ingredient(string name, int price, Unit unit, Guid unitId)
+    private List<IngredientUnits> ingredientUnits = [];
+
+    private Ingredient(string name, int price, Guid unitId)
     {
         Name = name;
         Price = price;
-        Unit = unit;
         UnitId = unitId;
     }
 
@@ -34,25 +35,17 @@ public sealed class Ingredient
     /// <summary>
     /// Единица измерения ингредиента
     /// </summary>
-    [JsonIgnore]
-    public Unit? Unit {  get; set; }
-
-    /// <summary>
-    /// Хранимая таблица переводов единиц измерения
-    /// </summary>
-    public Dictionary<Guid, double> RowTable { get; set; } = new Dictionary<Guid, double>();
+    public Unit? Unit { get; set; }
 
     /// <summary>
     /// Таблица переводов единиц измерения
     /// </summary>
-    [JsonIgnore]
-    public Dictionary<Unit, double> Table { get; set; } = new Dictionary<Unit, double>();
+    public IReadOnlyList<IngredientUnits> IngredientUnits => ingredientUnits;
 
-    public static Ingredient Create(string name, int price, Unit unit, Dictionary<Unit, double> table)
+    public static Ingredient Create(string name, int price, Unit unit)
     {
-        var ingredient = new Ingredient(name, price, unit, unit.Id);
+        var ingredient = new Ingredient(name, price, unit.Id);
         ingredient.Id = Guid.NewGuid();
-        ingredient.Table = table;
         return ingredient;
     }
 }
