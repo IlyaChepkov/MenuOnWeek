@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain;
+using MenuOnWeek.Application;
 
 namespace Data;
 
-public interface IUnitRepository : IBaseRepository<Unit>
+public interface IUnitRepository : IBaseRepository<Unit>, IEntityWithIdRepository<Unit>
 {
 
 }

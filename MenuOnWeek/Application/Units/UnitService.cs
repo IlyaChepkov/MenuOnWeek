@@ -1,6 +1,7 @@
 ﻿using Application.Ingredients;
 using Data;
 using Domain;
+using MenuOnWeek.Data.Ingredients;
 using Utils;
 
 namespace Application.Units;
@@ -41,13 +42,13 @@ internal sealed class UnitService : IUnitService
 
     public void Remove(Guid id)
     {
-        var unit = unitRepository.GetAll(x => x.Id == id).Single();
+        var unit = unitRepository.GetById(id);
         unitRepository.Remove(unit);
     }
 
     public void Update(UpdateUnitModel updateRequest)
     {
-        var unit = unitRepository.GetAll(x => x.Id == updateRequest.Id).Single();
+        var unit = unitRepository.GetById(updateRequest.Id);
         unit.Name = updateRequest.Name;
         unitRepository.Update(unit);
     }
@@ -96,7 +97,7 @@ internal sealed class UnitService : IUnitService
         List<UnitViewModel> units =
         [
             new UnitViewModel() { Id = ingredient.UnitId, Name = ingredient.Unit.Required().Name },
-            .. ingredient.Table.Keys.Select(x => new UnitViewModel() { Id = x.Id, Name = x.Name}),
+            .. ingredient.IngredientUnits.Select(x => new UnitViewModel() { Id = x.UnitId, Name = x.Unit?.Name}),
         ];
         return units;
     }

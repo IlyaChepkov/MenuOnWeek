@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Units;
+using Data;
+using MenuOnWeek.Domain;
 
 namespace MenuOnWeek.Application.Recipes;
 
-public sealed class QuantityModel
+public interface IRecipeIngredientsRepository : IBaseRepository<RecipeIngredients>
 {
-    public int Count { get; set; }
-
-    public Guid UnitId { get; set; } 
 }

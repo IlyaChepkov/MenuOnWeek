@@ -1,10 +1,11 @@
-﻿using Utils;
+﻿using System;
+using Utils;
 
 namespace Data;
 
-internal abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
+internal abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
-    private readonly DataContext dataContext;
+    protected readonly DataContext dataContext;
 
     public BaseRepository(DataContext dataContext)
     {
@@ -13,32 +14,42 @@ internal abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
 
     public void Add(TEntity entity)
     {
-        GetDataSet().Add(entity);
-        dataContext.Save();
+        dataContext.Set<TEntity>().Add(entity);
+        dataContext.SaveChanges();
     }
 
-    public IReadOnlyList<TEntity> GetAll(Func<TEntity, bool> predicate)
+    public void AddRange(List<TEntity> entities)
     {
-        return GetDataSet().Where(predicate).ToList();
+        dataContext.Set<TEntity>().AddRange(entities);
+        dataContext.SaveChanges();
     }
 
-    public void Remove(TEntity entity)
+    public virtual IReadOnlyList<TEntity> GetAll(Func<TEntity, bool> predicate)
     {
-        GetDataSet().Remove(entity);
-        dataContext.Save();
+        return dataContext.Set<TEntity>().Where(predicate).ToList();
+    }
+
+    public virtual void Remove(TEntity entity)
+    {
+        dataContext.Set<TEntity>().Remove(entity);
+        dataContext.SaveChanges();
+    }
+
+    public virtual void RemoveRange(List<TEntity> entities)
+    {
+        dataContext.Set<TEntity>().RemoveRange(entities);
+        dataContext.SaveChanges();
     }
 
     public void Update(TEntity entity)
     {
-        dataContext.Save();
+        dataContext.Set<TEntity>().Update(entity);
+        dataContext.SaveChanges();
     }
 
-    private List<TEntity> GetDataSet()
+    public void UpdateRange(List<TEntity> entities)
     {
-        return (dataContext
-            .GetType()
-            .GetProperties()
-            .Single(x => x.PropertyType == typeof(List<TEntity>))
-            .GetMethod.Required().Invoke(dataContext, null) as List<TEntity>).Required();
+        dataContext.Set<TEntity>().UpdateRange(entities);
+        dataContext.SaveChanges();
     }
 }

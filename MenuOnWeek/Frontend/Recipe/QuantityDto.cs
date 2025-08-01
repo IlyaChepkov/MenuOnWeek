@@ -1,3 +1,3 @@
 ﻿namespace MenuOnWeek.Frontend.Recipe;
 
-public record QuantityDto(Guid UnitId, double Count);
+public record QuantityDto(Guid UnitId, int Count);

@@ -20,7 +20,7 @@ public partial class RecipeForm : UserControl
     public RecipeForm()
     {
         defaultImage = System.Drawing.Image.
-                FromFile("C:\\Users\\user\\Documents\\MenuOnWeek\\MenuOnWeek\\Frontend\\no-photo--lg.png");
+            FromFile($"{Directory.GetCurrentDirectory()}\\no-photo--lg.png");
         ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
         unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
         InitializeComponent();
@@ -40,7 +40,7 @@ public partial class RecipeForm : UserControl
     public RecipeForm(RecipeViewModel recipe)
     {
         defaultImage = System.Drawing.Image.
-                FromFile("C:\\Users\\user\\Documents\\MenuOnWeek\\MenuOnWeek\\Frontend\\no-photo--lg.png");
+                FromFile($"{Directory.GetCurrentDirectory()}\\no-photo--lg.png");
         ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
         unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
         InitializeComponent();

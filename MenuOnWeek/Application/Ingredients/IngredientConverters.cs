@@ -1,5 +1,6 @@
 ﻿using Application.Units;
 using Domain;
+using Utils;
 
 namespace Application.Ingredients;
 
@@ -12,9 +13,9 @@ internal static class IngredientConverters
             Id = ingredient.Id,
             Name = ingredient.Name,
             Price = ingredient.Price,
-            Table = ingredient.Table
-               .Select(y => (y.Value, new UnitViewModel() { Id = y.Key.Id, Name = y.Key.Name }))
-               .ToDictionary(y => y.Item2, y => y.Item1),
+            Table = ingredient.IngredientUnits
+               .Select(x => (new UnitViewModel() { Id = x.UnitId, Name =  x?.Unit?.Name }, x.Required().Coeficient))
+               .ToDictionary(y => y.Item1, y => y.Item2),
             UnitId = ingredient.UnitId
         };
     }

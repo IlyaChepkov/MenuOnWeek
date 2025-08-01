@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MenuOnWeek.Domain;
 using Utils;
 
 namespace Domain;
 
-public sealed class Recipe
+public sealed class Recipe : IEntityWithId
 {
+    private List<RecipeIngredients> recipeIngredients = [];
 
     public Recipe(string name, string? image, string description)
     {
@@ -29,13 +32,11 @@ public sealed class Recipe
     public string Name { get; set; }
 
     /// <summary>
-    /// Цена рецепта
-    /// </summary>
+    /// Цена рецепта#
     public double Price { get
         {
-            return Ingredients
-                .Select(x => Math.Round((x.Key.Unit == x.Value.Unit ? x.Key.Price : x.Key.Table[x.Value.Unit.Required()] * x.Key.Price) * x.Value.Count))
-                .Select(x => x)
+            return recipeIngredients
+                .Select(x => Math.Round((x.Ingredient.Required().UnitId == x.UnitId ? x.Ingredient.Required().Price : x.Ingredient.Required().IngredientUnits.Single(y => y.UnitId == x.UnitId).Coeficient * x.Ingredient.Required().Price) * x.Count))
                 .Sum();
         } }
 
@@ -44,15 +45,10 @@ public sealed class Recipe
     public string? Image { get; set; }
 
     /// <summary>
-    /// Хранимые ингредиенты рецепта
-    /// </summary>
-    public Dictionary<Guid, Quantity> RawIngredients { get; set; } = new Dictionary<Guid, Quantity>();
-
-    /// <summary>
     /// Ингредиенты рецепта
     /// </summary>
-    [JsonIgnore]
-    public Dictionary<Ingredient, Quantity> Ingredients { get; set; } = new Dictionary<Ingredient, Quantity>();
+    [NotMapped]
+    public IReadOnlyList<RecipeIngredients> RecipeIngredients => recipeIngredients;
 
     public static Recipe Create(string name, string? image, string description)
     {
