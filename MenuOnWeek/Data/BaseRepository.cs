@@ -1,5 +1,6 @@
-﻿using System;
-using Utils;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Data;
 
@@ -12,44 +13,44 @@ internal abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where
         this.dataContext = dataContext;
     }
 
-    public void Add(TEntity entity)
+    public async Task Add(TEntity entity, CancellationToken token)
     {
-        dataContext.Set<TEntity>().Add(entity);
-        dataContext.SaveChanges();
+        await dataContext.Set<TEntity>().AddAsync(entity, token);
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public void AddRange(List<TEntity> entities)
+    public async Task AddRange(List<TEntity> entities, CancellationToken token)
     {
-        dataContext.Set<TEntity>().AddRange(entities);
-        dataContext.SaveChanges();
+        await dataContext.Set<TEntity>().AddRangeAsync(entities, token);
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public virtual IReadOnlyList<TEntity> GetAll(Func<TEntity, bool> predicate)
+    public virtual async Task<IReadOnlyList<TEntity>> GetAll(CancellationToken token)
     {
-        return dataContext.Set<TEntity>().Where(predicate).ToList();
+        return await dataContext.Set<TEntity>().ToListAsync(token);
     }
 
-    public virtual void Remove(TEntity entity)
+    public virtual async Task Remove(TEntity entity, CancellationToken token)
     {
         dataContext.Set<TEntity>().Remove(entity);
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public virtual void RemoveRange(List<TEntity> entities)
+    public virtual async Task RemoveRange(List<TEntity> entities, CancellationToken token)
     {
         dataContext.Set<TEntity>().RemoveRange(entities);
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public void Update(TEntity entity)
+    public async Task Update(TEntity entity, CancellationToken token)
     {
         dataContext.Set<TEntity>().Update(entity);
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public void UpdateRange(List<TEntity> entities)
+    public async Task UpdateRange(List<TEntity> entities, CancellationToken token)
     {
         dataContext.Set<TEntity>().UpdateRange(entities);
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync(token);
     }
 }

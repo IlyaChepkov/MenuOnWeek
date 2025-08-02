@@ -12,13 +12,21 @@ internal sealed class MenuRepository : EntityWithIdRepository<Menu>, IMenuReposi
 
     }
 
-    public override IReadOnlyList<Menu> GetAll(Func<Menu, bool> predicate)
+    public override async Task<IReadOnlyList<Menu>> GetAll(CancellationToken token)
+    {
+        return await dataContext.Set<Menu>()
+            .AsNoTracking()
+            .Include(x => x.MenuRecipes)
+            .ThenInclude(x => x.Recipe)
+            .ToListAsync(token);
+    }
+
+    public Task<Menu?> GetByName(string name, CancellationToken token)
     {
         return dataContext.Set<Menu>()
             .AsNoTracking()
             .Include(x => x.MenuRecipes)
             .ThenInclude(x => x.Recipe)
-            .Where(predicate)
-            .ToList();
+            .SingleOrDefaultAsync(x => x.Name == name, token);
     }
 }

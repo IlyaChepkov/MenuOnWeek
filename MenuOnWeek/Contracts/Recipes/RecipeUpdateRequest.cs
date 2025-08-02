@@ -21,7 +21,12 @@ public sealed class RecipeUpdateRequest
     public string? Description { get; set; }
 
     /// <summary>
+    /// Картинка рецепта
+    /// </summary>
+    public string? Image {  get; set; }
+
+    /// <summary>
     /// Ингредиенты рецепта
     /// </summary>
-    public List<RecipeIngredientsCreateOrUpdateRequest> Ingredients { get; set; } = new List<RecipeIngredientsCreateOrUpdateRequest>();
+    public IReadOnlyList<RecipeIngredientsCreateOrUpdateRequest> Ingredients { get; set; } = Array.Empty<RecipeIngredientsCreateOrUpdateRequest>();
 }

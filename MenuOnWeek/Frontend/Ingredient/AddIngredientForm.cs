@@ -63,15 +63,9 @@ public sealed partial class AddIngredientForm : Form
 
         
 
-        var createRequest = new CreateIngredientModel()
-        {
-            Name = ingredientDto.Name,
-            Price = ingredientDto.Price,
-            UnitId = ingredientDto.UnitId,
-            Table = ingredientDto.Table.Select(x => (unitService.GetById(x.Key), x.Value)).ToDictionary()
-        };
+        var createRequest = new CreateIngredientCommand(ingredientDto.Name, ingredientDto.Price, ingredientDto.UnitId, ingredientDto.Table.Select(x => (unitService.GetById(x.Key, CancellationToken.None).Result, x.Value)).ToDictionary());
 
-        ingredientService.Add(createRequest);
+        ingredientService.Add(createRequest, CancellationToken.None);
 
         Close();
     }

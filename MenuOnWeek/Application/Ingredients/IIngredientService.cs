@@ -9,17 +9,17 @@ namespace Application.Ingredients;
 
 public interface IIngredientService
 {
-    void Add(CreateIngredientModel entity);
+    Task Add(CreateIngredientCommand entity, CancellationToken token);
 
-    IReadOnlyList<IngredientViewModel> GetAll(int offset, int limit);
+    Task<IReadOnlyList<IngredientViewCommand>> GetAll(int offset, int limit, CancellationToken token);
 
-    void Update(UpdateIngredientModel entity);
+    Task Update(UpdateIngredientCommand entity, CancellationToken token);
 
-    void Remove(Guid entity);
+    Task Remove(Guid entity, CancellationToken token);
 
-    IngredientViewModel GetById(Guid id);
+    Task<IngredientViewCommand> GetById(Guid id, CancellationToken token);
 
-    IngredientViewModel? GetByName(string name);
+    Task<IngredientViewCommand?> GetByName(string name, CancellationToken token);
 
-    IReadOnlyList<IngredientViewModel> GetByPartName(string namePart, int offset, int limit);
+    Task<IReadOnlyList<IngredientViewCommand>> GetByPartName(string namePart, int offset, int limit, CancellationToken token);
 }

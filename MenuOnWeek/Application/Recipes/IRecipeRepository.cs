@@ -10,5 +10,5 @@ namespace Data;
 
 public interface IRecipeRepository : IEntityWithIdRepository<Recipe>
 {
-
+    Task<Recipe?> GetByName(string name, CancellationToken token);
 }

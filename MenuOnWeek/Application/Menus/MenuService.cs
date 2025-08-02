@@ -1,7 +1,5 @@
 ﻿using Data;
 using Domain;
-using MenuOnWeek.Application.Recipes;
-using MenuOnWeek.Domain;
 
 namespace MenuOnWeek.Application.Menus;
 
@@ -18,20 +16,20 @@ internal sealed class MenuService : IMenuService
         this.menuRecipesRepository = menuRecipesRepository;
     }
 
-    public void Add(CreateMenuModel entity)
+    public async Task Add(CreateMenuCommand entity, CancellationToken token)
     {
         var menu = Menu.Create(
             entity.Name,
             entity.MenuType);
-        menuRepository.Add(menu);
+        await menuRepository.Add(menu, CancellationToken.None);
 
-        menuRecipesRepository.AddRange(entity.MenuRecipes.Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId), x.ServeCount, x.Date, x.Meal)).ToList());
+        await menuRecipesRepository.AddRange(entity.MenuRecipes.Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId, token).Result, x.ServeCount, x.Date, x.Meal)).ToList(), token);
     }
 
-    public IReadOnlyList<MenuViewModel> GetAll(int offset, int limit)
+    public async Task<IReadOnlyList<MenuViewModel>> GetAll(int offset, int limit, CancellationToken token)
     {
-        return menuRepository.
-            GetAll(x => true).
+        var menus = await menuRepository.GetAll(token);
+        return menus.
             Skip(offset).
             Take(limit).
             Select(x => new MenuViewModel()
@@ -52,15 +50,15 @@ internal sealed class MenuService : IMenuService
             .ToList();
     }
 
-    public void Remove(Guid entity)
+    public async Task Remove(Guid entity, CancellationToken token)
     {
-        var menu = menuRepository.GetAll(x => x.Id == entity).Single();
-        menuRepository.Remove(menu);
+        var menu = await menuRepository.GetById(entity, token);
+        await menuRepository.Remove(menu, token);
     }
 
-    public void Update(MenuUpdateModel updateRequest)
+    public async Task Update(MenuUpdateModel updateRequest, CancellationToken token)
     {
-        var menu = menuRepository.GetById(updateRequest.Id);
+        var menu = await menuRepository.GetById(updateRequest.Id, token);
         menu.Name = updateRequest.Name;
         //menu.MenuRecipes = entity.MenuRecipes.Select(x => MenuRecipes.Create(
         //    menu.Id,
@@ -73,7 +71,7 @@ internal sealed class MenuService : IMenuService
 
         List<MenuRecipes> deleteList = menu.MenuRecipes.Where(x => !updateRequest.MenuRecipes.Any(y => y.RecipeId == x.RecipeId)).ToList();
 
-        menuRecipesRepository.RemoveRange(deleteList);
+        await menuRecipesRepository.RemoveRange(deleteList, token);
 
         List<MenuRecipes> updateList = menu.MenuRecipes.Where(x => updateRequest.MenuRecipes.Any(y => y.RecipeId == x.RecipeId)).ToList();
         updateList.ForEach(x =>
@@ -83,21 +81,26 @@ internal sealed class MenuService : IMenuService
             x.Serve = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).ServeCount;
         });
 
-        menuRecipesRepository.UpdateRange(updateList);
+        await menuRecipesRepository.UpdateRange(updateList, token);
 
         List<MenuRecipes> addList = updateRequest.MenuRecipes
             .Where(x => !menu.MenuRecipes.Any(y => y.RecipeId == x.RecipeId))
-            .Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId), x.ServeCount, x.Date, x.Meal))
+            .Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId, token).Result, x.ServeCount, x.Date, x.Meal))
             .ToList();
 
-        menuRecipesRepository.AddRange(addList);
+        await menuRecipesRepository.AddRange(addList, token);
 
-        menuRepository.Update(menu);
+        await menuRepository.Update(menu, token);
     }
 
-    public MenuViewModel GetByName(string name)
+    public async Task<MenuViewModel?> GetByName(string name, CancellationToken token)
     {
-        var menu = menuRepository.GetAll(x => x.Name == name).Single();
+        var menu = await menuRepository.GetByName(name, token);
+
+        if (menu is null)
+        {
+            return null;
+        }
         return new MenuViewModel()
         {
             Id = menu.Id,

@@ -3,7 +3,7 @@ using Application.Units;
 
 namespace Application.Ingredients;
 
-public sealed class IngredientViewModel
+public sealed class IngredientViewCommand
 {
     public required Guid Id { get; set; }
 
@@ -13,7 +13,7 @@ public sealed class IngredientViewModel
 
     public required Guid UnitId { get; set; }
 
-    public required Dictionary<UnitViewModel, double> Table { get; set; } = new Dictionary<UnitViewModel, double>();
+    public required Dictionary<UnitViewCommand, double> Table { get; set; } = new Dictionary<UnitViewCommand, double>();
 
     public override string ToString() => Name;
 }

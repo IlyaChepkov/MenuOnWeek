@@ -1,4 +1,4 @@
-﻿using Application.Ingredients;
+﻿using System.Threading.Tasks;
 using Data;
 using Domain;
 using MenuOnWeek.Data.Ingredients;
@@ -17,87 +17,86 @@ internal sealed class UnitService : IUnitService
         this.ingredientRepository = ingredientRepository;
     }
 
-    public void Add(CreateUnitModel createRequest)
+    public async Task Add(CreateUnitCommand createRequest, CancellationToken token)
     {
-        if (GetByName(createRequest.Name) is not null)
+        var name = await GetByName(createRequest.Name.Required(), token);
+        if (name is not null)
         {
             throw new ArgumentException("единица измерения с таким именем существует");
         }
-        var unit = Unit.Create(createRequest.Name);
-        unitRepository.Add(unit);
+        var unit = Unit.Create(createRequest.Name.Required());
+        await unitRepository.Add(unit, CancellationToken.None);
     }
 
-    public IReadOnlyList<UnitViewModel> GetAll(int offset, int limit)
+    public async Task<IReadOnlyList<UnitViewCommand>> GetAll(int offset, int limit, CancellationToken token)
     {
-        return unitRepository
-            .GetAll(x => true)
+        var units = await unitRepository.GetAll(token);
+        return units
             .Skip(offset)
             .Take(limit)
-            .Select(x => new UnitViewModel()
-            {
-                Id = x.Id,
-                Name = x.Name
-            }).ToList();
+            .Select(x => new UnitViewCommand(
+            
+                x.Id,
+                x.Name
+            )).ToList();
     }
 
-    public void Remove(Guid id)
+    public async Task Remove(Guid id, CancellationToken token)
     {
-        var unit = unitRepository.GetById(id);
-        unitRepository.Remove(unit);
+        var unit = unitRepository.GetById(id, token);
+        await unitRepository.Remove(unit.Result, token);
     }
 
-    public void Update(UpdateUnitModel updateRequest)
+    public async Task Update(UpdateUnitCommand updateRequest, CancellationToken token)
     {
-        var unit = unitRepository.GetById(updateRequest.Id);
-        unit.Name = updateRequest.Name;
-        unitRepository.Update(unit);
+        var unit = unitRepository.GetById(updateRequest.Id, token).Result;
+        unit.Name = updateRequest.Name.Required();
+        await unitRepository.Update(unit, token);
     }
 
-    public UnitViewModel? GetByName(string name)
+    public async Task<UnitViewCommand?> GetByName(string name, CancellationToken token)
     {
-        var unit = unitRepository.GetAll(x => x.Name.
-        ToLower() == name.ToLower()).SingleOrDefault();
+        var unit = await unitRepository.GetByName(name, token);
         if (unit == null)
         {
             return null;
         }
         else
         {
-            return new UnitViewModel()
-            {
-                Name = unit.Name,
-                Id = unit.Id
-            };
+            return new UnitViewCommand(
+                 unit.Id,
+                 unit.Name
+            );
         }
     }
 
-    public IReadOnlyList<UnitViewModel> GetByNamePart(string namePart, int offset, int limit)
+    public async Task<IReadOnlyList<UnitViewCommand>> GetByNamePart(string namePart, int offset, int limit, CancellationToken token)
     {
-        return unitRepository.
-            GetAll(x => x.Name.ToLower().
-            Contains(namePart.ToLower())).
-            Skip(offset).
-            Take(limit).
-            Select(x => new UnitViewModel()
-            {
-                Name = x.Name,
-                Id = x.Id
-            }).ToList();
+        var units = await unitRepository.GetByPartName(namePart, token);
+
+        return units
+            .Skip(offset)
+            .Take(limit)
+            .Select(x => new UnitViewCommand(
+                 x.Id,
+                 x.Name
+            ))
+            .ToList();
     }
 
-    public UnitViewModel GetById(Guid id)
+    public async Task<UnitViewCommand> GetById(Guid id, CancellationToken token)
     {
-        var unit = unitRepository.GetAll(x => x.Id == id).Single();
-        return new UnitViewModel() { Name = unit.Name, Id = unit.Id };
+        var unit = await unitRepository.GetById(id, token);
+        return new UnitViewCommand(unit.Id, unit.Name);
     }
 
-    public IReadOnlyList<UnitViewModel> GetByIngredient(Guid ingredientId)
+    public async Task<IReadOnlyList<UnitViewCommand>> GetByIngredient(Guid ingredientId, CancellationToken token)
     {
-        Ingredient ingredient = ingredientRepository.GetAll(x=> x.Id == ingredientId).Single();
-        List<UnitViewModel> units =
+        var ingredient = await ingredientRepository.GetById(ingredientId, token);
+        List<UnitViewCommand> units =
         [
-            new UnitViewModel() { Id = ingredient.UnitId, Name = ingredient.Unit.Required().Name },
-            .. ingredient.IngredientUnits.Select(x => new UnitViewModel() { Id = x.UnitId, Name = x.Unit?.Name}),
+            new UnitViewCommand( ingredient.UnitId, ingredient.Unit.Required().Name ),
+            .. ingredient.IngredientUnits.Select(x => new UnitViewCommand( x.UnitId, x.Unit?.Name)),
         ];
         return units;
     }

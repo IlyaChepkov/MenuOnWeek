@@ -25,7 +25,7 @@ public sealed partial class RecipeControl : UserControl
 
     private void RefreshRecipesList()
     {
-        var recipes = recipeService.GetAll(0, 100).Select(x => x.Name).OrderBy(x => x).ToArray();
+        var recipes = recipeService.GetAll(0, 100, CancellationToken.None).Result.Required().Select(x => x.Name).OrderBy(x => x).ToArray();
         RecipesList.Items.Clear();
         RecipesList.Items.AddRange(recipes);
     }
@@ -37,13 +37,13 @@ public sealed partial class RecipeControl : UserControl
             return;
         }
 
-        var recipe = recipeService.GetByName(RecipesList.SelectedItem.ToString().Required());
+        var recipe = recipeService.GetByName(RecipesList.SelectedItem.ToString().Required(), CancellationToken.None);
 
         if (recipeForm is not null)
         {
             Controls.Remove(recipeForm);
         }
-        recipeForm = new RecipeForm(recipe.Required());
+        recipeForm = new RecipeForm(recipe.Result.Required());
         recipeForm.Location = new Point(135, 3);
         Controls.Add(recipeForm);
     }
@@ -78,20 +78,20 @@ public sealed partial class RecipeControl : UserControl
                 return;
             }
 
-            var updateRequest = new RecipeUpdateModel()
+            var updateRequest = new RecipeUpdateCommand()
             {
-                Id = recipeService.GetByName((RecipesList.SelectedItem as string).Required()).Id,
+                Id = recipeService.GetByName((RecipesList.SelectedItem as string).Required(), CancellationToken.None).Result.Required().Id,
                 Name = recipeDto.Name,
                 Description = recipeDto.Description,
                 Image = recipeDto.Image,
-                Ingredients = recipeDto.Ingredients.Select(x => (x.Key, new QuantityModel()
+                Ingredients = recipeDto.Ingredients.Select(x => (x.Key, new QuantityCommand()
                 {
                     UnitId = x.Value.UnitId,
                     Count = x.Value.Count
                 })).ToDictionary(),
                 IsImageChanged = recipeDto.IsImageChanged
             };
-            recipeService.Update(updateRequest);
+            recipeService.Update(updateRequest, CancellationToken.None);
             int recipeIndex = RecipesList.SelectedIndex;
             RefreshRecipesList();
             RecipesList.SelectedIndex = recipeIndex;
@@ -104,12 +104,12 @@ public sealed partial class RecipeControl : UserControl
         {
             if (RecipesList.SelectedItem is not null)
             {
-                if (menuService.GetAll(0, 1000).Any(x => x.Recipes.Any(y => y.RecipeId == recipeService.GetByName((RecipesList.SelectedItem as string).Required()).Id)))
+                if (menuService.GetAll(0, 1000, CancellationToken.None).Result.Required().Any(x => x.Recipes.Any(y => y.RecipeId == recipeService.GetByName((RecipesList.SelectedItem as string).Required(), CancellationToken.None).Result.Required().Id)))
                 {
                     statusStrip1.Items[0].Text = "Этот рецепт используется";
                     return;
                 }
-                recipeService.Remove(recipeService.GetByName(RecipesList.SelectedItem.Required().ToString().Required()).Id);
+                recipeService.Remove(recipeService.GetByName(RecipesList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None);
 
                 RefreshRecipesList();
                 Controls.Remove(recipeForm);

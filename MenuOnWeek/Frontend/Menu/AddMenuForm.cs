@@ -45,7 +45,7 @@ public partial class AddMenuForm : Form
 
         statusStrip1.Items[0].Text = "";
 
-        var addMenuModel = new CreateMenuModel()
+        var addMenuModel = new CreateMenuCommand()
         {
             Name = menuDto.Name,
             MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
@@ -57,7 +57,7 @@ public partial class AddMenuForm : Form
             }).ToList(),
             MenuType = menuDto.MenuType
         };
-        menuService.Add(addMenuModel);
+        menuService.Add(addMenuModel, CancellationToken.None);
         Close();
     }
 }

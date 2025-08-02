@@ -11,21 +11,30 @@ internal sealed class RecipeRepository : EntityWithIdRepository<Recipe>, IRecipe
 
     }
 
-    public override IReadOnlyList<Recipe> GetAll(Func<Recipe, bool> predicate)
+    public override async Task<IReadOnlyList<Recipe>> GetAll(CancellationToken token)
     {
-        return dataContext.Set<Recipe>()
+        return await dataContext.Set<Recipe>()
             .AsNoTracking()
             .Include(x => x.RecipeIngredients)
             .ThenInclude(x => x.Ingredient)
             .ThenInclude(x => x.IngredientUnits)
-            .Where(predicate).ToList();
+            .ToListAsync();
     }
 
-    public override Recipe GetById(Guid id)
+    public override Task<Recipe> GetById(Guid id, CancellationToken token)
     {
         return dataContext.Set<Recipe>()
             .Include(x => x.RecipeIngredients)
             .ThenInclude(x => x.Ingredient)
-            .ThenInclude(x => x.IngredientUnits).Single(x => x.Id == id);
+            .ThenInclude(x => x.IngredientUnits).SingleAsync(x => x.Id == id, token);
+    }
+
+    public Task<Recipe?> GetByName(string name, CancellationToken token)
+    {
+        return dataContext.Set<Recipe>()
+            .Include(x => x.RecipeIngredients)
+            .ThenInclude(x => x.Ingredient)
+            .ThenInclude(x => x.IngredientUnits).SingleOrDefaultAsync(x => x.Name == name, token);
+        
     }
 }

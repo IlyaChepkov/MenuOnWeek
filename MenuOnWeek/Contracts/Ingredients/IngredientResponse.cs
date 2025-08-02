@@ -23,5 +23,5 @@ public sealed class IngredientResponse
     /// <summary>
     /// Таблица единиц измерения
     /// </summary>
-    public IReadOnlyList<IngredientUnitsResponse> Units { get; set; } = new List<IngredientUnitsResponse>();
+    public IReadOnlyList<IngredientUnitsResponse> Units { get; set; } = Array.Empty<IngredientUnitsResponse>();
 }

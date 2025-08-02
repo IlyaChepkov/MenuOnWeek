@@ -20,7 +20,7 @@ public sealed class MenuRecipesCreateOrUpdateRequest
     /// <summary>
     /// День недели
     /// </summary>
-    public DayOfWeek? DayOfWeek { get; set; }
+    public DaysOfWeek? DaysOfWeek { get; set; }
 
     /// <summary>
     /// Количество порций

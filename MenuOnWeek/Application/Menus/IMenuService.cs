@@ -10,13 +10,13 @@ namespace MenuOnWeek.Application.Menus;
 
 public interface IMenuService
 {
-    void Add(CreateMenuModel entity);
+    Task Add(CreateMenuCommand entity, CancellationToken token);
 
-    IReadOnlyList<MenuViewModel> GetAll(int offset, int limit);
+    Task<IReadOnlyList<MenuViewModel>> GetAll(int offset, int limit, CancellationToken token);
 
-    void Update(MenuUpdateModel entity);
+    Task Update(MenuUpdateModel entity, CancellationToken token);
 
-    void Remove(Guid entity);
+    Task Remove(Guid entity, CancellationToken token);
 
-    MenuViewModel GetByName(string name);
+    Task<MenuViewModel?> GetByName(string name, CancellationToken token);
 }

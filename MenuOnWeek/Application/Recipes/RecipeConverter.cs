@@ -10,9 +10,9 @@ namespace MenuOnWeek.Application.Recipes;
 
 internal static class RecipeConverter
 {
-    internal static RecipeViewModel ConvertToRecipeViewModel(this Recipe recipe)
+    internal static RecipeViewCommand ConvertToRecipeViewModel(this Recipe recipe)
     {
-        return new RecipeViewModel()
+        return new RecipeViewCommand()
         {
             Name = recipe.Name,
             Image = recipe.Image,

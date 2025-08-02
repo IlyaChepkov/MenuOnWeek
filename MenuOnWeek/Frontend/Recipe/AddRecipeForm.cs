@@ -36,12 +36,12 @@ public partial class AddRecipeForm : Form
             return;
         }
 
-        var createRequest = new RecipeCreateModel()
+        var createRequest = new RecipeCreateCommand()
         {
             Name = recipeDto.Name,
             Description = recipeDto.Description,
             Image = recipeDto.Image,
-            Ingredients = recipeDto.Ingredients.Select(x => (x.Key, new QuantityModel()
+            Ingredients = recipeDto.Ingredients.Select(x => (x.Key, new QuantityCommand()
                 {
                 Count = x.Value.Count,
                 UnitId = x.Value.UnitId
@@ -51,7 +51,7 @@ public partial class AddRecipeForm : Form
 
 
 
-        recipeService.Add(createRequest);
+        recipeService.Add(createRequest, CancellationToken.None);
         Close();
     }
 }

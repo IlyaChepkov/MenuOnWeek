@@ -115,7 +115,7 @@ public partial class MenuForm : UserControl
         {
             var recipeComboBoxCell = (RecipesTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
             recipeComboBoxCell.DataSource = recipeService
-                .GetAll(0, 100)
+                .GetAll(0, 100, CancellationToken.None).Result.Required()
                 .Select(x => x.Name)
                 .ToList();
 
@@ -156,7 +156,7 @@ public partial class MenuForm : UserControl
                         }
                         break;
                 }
-                recipeComboBoxCell.Value = recipeService.GetById(currentMenu.Recipes[i].RecipeId).Name;
+                recipeComboBoxCell.Value = recipeService.GetById(currentMenu.Recipes[i].RecipeId, CancellationToken.None).Result.Required().Name;
             }
         }
         switch (menuType)
@@ -188,7 +188,7 @@ public partial class MenuForm : UserControl
     {
         var recipeComboBoxCell = (RecipesTable.Rows[^1].Cells[0] as DataGridViewComboBoxCell).Required();
         recipeComboBoxCell.DataSource = recipeService
-            .GetAll(0, 100)
+            .GetAll(0, 100, CancellationToken.None).Result.Required()
             .Select(x => x.Name)
             .ToList();
 
@@ -230,7 +230,7 @@ public partial class MenuForm : UserControl
                Int32.TryParse(cells[3].Value.ToString().Required(), out count);
             }
             menuDto.Recipes.Add(new MenuElementDto(
-                recipeService.GetByName(cells[0].Value.ToString().Required()).Id,
+                recipeService.GetByName(cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Id,
                 count,
                 day,
                 meal));

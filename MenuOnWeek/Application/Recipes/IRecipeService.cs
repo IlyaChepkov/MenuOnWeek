@@ -2,15 +2,15 @@
 
 public interface IRecipeService
 {
-    void Add(RecipeCreateModel entity);
+    Task Add(RecipeCreateCommand entity, CancellationToken token);
 
-    IReadOnlyList<RecipeViewModel> GetAll(int offset, int limit);
+    Task<IReadOnlyList<RecipeViewCommand>> GetAll(int offset, int limit, CancellationToken token);
 
-    void Update(RecipeUpdateModel entity);
+    Task Update(RecipeUpdateCommand entity, CancellationToken token);
 
-    void Remove(Guid id);
+    Task Remove(Guid id, CancellationToken token);
 
-    RecipeViewModel GetById(Guid id);
+    Task<RecipeViewCommand> GetById(Guid id, CancellationToken token);
 
-    RecipeViewModel GetByName(string name);
+    Task<RecipeViewCommand?> GetByName(string name, CancellationToken token);
 }

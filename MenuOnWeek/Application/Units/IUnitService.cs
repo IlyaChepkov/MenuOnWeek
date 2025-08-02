@@ -9,19 +9,19 @@ namespace Application.Units;
 
 public interface IUnitService
 {
-    void Add(CreateUnitModel entity);
+    Task Add(CreateUnitCommand entity, CancellationToken token);
 
-    IReadOnlyList<UnitViewModel> GetAll(int offset, int limit);
+    Task<IReadOnlyList<UnitViewCommand>> GetAll(int offset, int limit, CancellationToken token);
 
-    void Update(UpdateUnitModel entity);
+    Task Update(UpdateUnitCommand entity, CancellationToken token);
 
-    void Remove(Guid id);
+    Task Remove(Guid id, CancellationToken token);
 
-    UnitViewModel GetById(Guid id);
+    Task<UnitViewCommand> GetById(Guid id, CancellationToken token);
 
-    UnitViewModel? GetByName(string name);
+    Task<UnitViewCommand?> GetByName(string name, CancellationToken token);
 
-    IReadOnlyList<UnitViewModel> GetByNamePart(string namePart, int offset, int limit);
+    Task<IReadOnlyList<UnitViewCommand>> GetByNamePart(string namePart, int offset, int limit, CancellationToken token);
 
-    IReadOnlyList<UnitViewModel> GetByIngredient(Guid ingredientId);
+    Task<IReadOnlyList<UnitViewCommand>> GetByIngredient(Guid ingredientId, CancellationToken token);
 }

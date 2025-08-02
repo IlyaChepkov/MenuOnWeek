@@ -10,5 +10,7 @@ namespace Data;
 
 public interface IUnitRepository : IBaseRepository<Unit>, IEntityWithIdRepository<Unit>
 {
+    public Task<Unit?> GetByName(string name, CancellationToken token);
 
+    Task<IReadOnlyList<Unit>> GetByPartName(string partName, CancellationToken token);
 }

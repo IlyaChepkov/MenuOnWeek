@@ -33,7 +33,7 @@ namespace MenuOnWeek.Frontend.Menu
         {
             MenusList.Items.Clear();
 
-            MenusList.Items.AddRange(menuService.GetAll(0, 100).Select(x => x.Name).OrderBy(x => x).ToArray());
+            MenusList.Items.AddRange(menuService.GetAll(0, 100, CancellationToken.None).Result.Required().Select(x => x.Name).OrderBy(x => x).ToArray());
         }
 
         private void AddButton_Click(object sender, EventArgs e)
@@ -66,7 +66,7 @@ namespace MenuOnWeek.Frontend.Menu
 
                 var updateRequest = new MenuUpdateModel()
                 {
-                    Id = menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required()).Id,
+                    Id = menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required().Id,
                     Name = menuDto.Name,
                     MenuType = menuDto.MenuType,
                     MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
@@ -77,10 +77,10 @@ namespace MenuOnWeek.Frontend.Menu
                         ServeCount = x.ServeCount
                     }).ToList()
                 };
-                menuService.Update(updateRequest);
+                menuService.Update(updateRequest, CancellationToken.None);
 
                 Controls.Remove(menuForm);
-                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required()));
+                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required());
                 Controls.Add(menuForm);
                 menuForm.Location = new Point(200, 5);
             }
@@ -95,7 +95,7 @@ namespace MenuOnWeek.Frontend.Menu
                     Controls.Remove(menuForm);
                 }
 
-                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.ToString().Required()));
+                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required());
                 Controls.Add(menuForm);
 
                 menuForm.Location = new Point(200, 5);
@@ -108,7 +108,7 @@ namespace MenuOnWeek.Frontend.Menu
             {
                 if (MenusList.SelectedItem is not null)
                 {
-                    menuService.Remove(menuService.GetByName(MenusList.SelectedItem.ToString().Required()).Id);
+                    menuService.Remove(menuService.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None).Required();
                     RefreshMenusList();
                     Controls.Remove(menuForm);
                     menuForm = null;

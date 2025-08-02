@@ -2,7 +2,7 @@
 
 namespace MenuOnWeek.Application.Menus;
 
-public sealed class CreateMenuModel
+public sealed class CreateMenuCommand
 {
     public required string Name { get; set; }
 

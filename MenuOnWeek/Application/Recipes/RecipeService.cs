@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using System.Threading.Tasks;
+using Data;
 using Domain;
 using MenuOnWeek.Data.Ingredients;
 using MenuOnWeek.Domain;
@@ -23,7 +24,7 @@ public sealed class RecipeService : IRecipeService
         this.recipeIngredientsRepository = recipeIngredientsRepository;
     }
 
-    public void Add(RecipeCreateModel entity)
+    public async Task Add(RecipeCreateCommand entity, CancellationToken token)
     {
         string? imageId = null;
         if (!String.IsNullOrWhiteSpace(entity.Image))
@@ -34,31 +35,32 @@ public sealed class RecipeService : IRecipeService
 
         var recipe = Recipe.Create(entity.Name, imageId, entity.Description);
 
-        recipeRepository.Add(recipe);
+        await recipeRepository.Add(recipe, token);
 
-        recipeIngredientsRepository.AddRange(entity.Ingredients.Select(x => RecipeIngredients.Create(recipe.Id, x.Key, x.Value.UnitId, x.Value.Count)).ToList());
+        await recipeIngredientsRepository.AddRange(entity.Ingredients.Select(x => RecipeIngredients.Create(recipe.Id, x.Key, x.Value.UnitId, x.Value.Count)).ToList(), token);
 
 
     }
 
-    public IReadOnlyList<RecipeViewModel> GetAll(int offset, int limit)
+    public async Task<IReadOnlyList<RecipeViewCommand>> GetAll(int offset, int limit, CancellationToken token)
     {
+        var recipes = await recipeRepository.
+            GetAll(token);
         return
-            recipeRepository.
-            GetAll(x => true).
+            recipes.
             Skip(offset).Take(limit).
             ToList().Select(x => x.ConvertToRecipeViewModel())
             .ToList();
     }
 
-    public void Remove(Guid id)
+    public async Task Remove(Guid id, CancellationToken token)
     {
-        recipeRepository.Remove(recipeRepository.GetAll(x => x.Id == id).Single());
+        await recipeRepository.Remove(recipeRepository.GetById(id, token).Result, token);
     }
 
-    public void Update(RecipeUpdateModel updateRequest)
+    public async Task Update(RecipeUpdateCommand updateRequest, CancellationToken token)
     {
-        var recipe = recipeRepository.GetById(updateRequest.Id);
+        var recipe = await recipeRepository.GetById(updateRequest.Id, token);
 
         recipe.Name = updateRequest.Name;
         recipe.Description = updateRequest.Description;
@@ -81,7 +83,7 @@ public sealed class RecipeService : IRecipeService
 
         List<RecipeIngredients> deleteList = recipe.RecipeIngredients.Where(x => !updateRequest.Ingredients.ContainsKey(x.IngredientId)).ToList();
 
-        recipeIngredientsRepository.RemoveRange(deleteList);
+        await recipeIngredientsRepository.RemoveRange(deleteList, token);
 
         List<RecipeIngredients> updateList = recipe.RecipeIngredients.Where(x => updateRequest.Ingredients.ContainsKey(x.IngredientId)).ToList();
         updateList.ForEach(x =>
@@ -90,22 +92,22 @@ public sealed class RecipeService : IRecipeService
             x.Count = updateRequest.Ingredients.Single(y => y.Key == x.IngredientId).Value.Count;
         });
 
-        recipeIngredientsRepository.UpdateRange(updateList);
+        await recipeIngredientsRepository.UpdateRange(updateList, token);
 
         List<RecipeIngredients> addList = updateRequest.Ingredients
             .Where(x => !recipe.RecipeIngredients.Any(y => y.IngredientId == x.Key))
             .Select(x => RecipeIngredients.Create(recipe.Id, x.Key, x.Value.UnitId, x.Value.Count))
             .ToList();
 
-        recipeIngredientsRepository.AddRange(addList);
+        await recipeIngredientsRepository.AddRange(addList, token);
 
-        recipeRepository.Update(recipe);
+        await recipeRepository.Update(recipe, token);
     }
 
-    public RecipeViewModel GetById(Guid id)
+    public async Task<RecipeViewCommand> GetById(Guid id, CancellationToken token)
     {
-        Recipe recipe = recipeRepository.GetAll(x => x.Id == id).Single();
-        return new RecipeViewModel()
+        Recipe recipe = await recipeRepository.GetById(id, token);
+        return new RecipeViewCommand()
         {
             Id = recipe.Id,
             Name = recipe.Name,
@@ -121,10 +123,14 @@ public sealed class RecipeService : IRecipeService
         };
     }
 
-    public RecipeViewModel GetByName(string name)
+    public async Task<RecipeViewCommand?> GetByName(string name, CancellationToken token)
     {
-        Recipe recipe = recipeRepository.GetAll(x => x.Name == name).Single();
-        return new RecipeViewModel()
+        var recipe = await recipeRepository.GetByName(name, token);
+        if (recipe is null)
+        {
+            return null;
+        }
+        return new RecipeViewCommand()
         {
             Id = recipe.Id,
             Name = recipe.Name,

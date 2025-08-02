@@ -30,5 +30,5 @@ public sealed class MenuResponse
     /// <summary>
     /// Блюда меню
     /// </summary>
-    public IReadOnlyList<MenuRecipesResponse> MenuRecipes { get; set; } = new List<MenuRecipesResponse>();
+    public IReadOnlyList<MenuRecipesResponse> MenuRecipes { get; set; } = Array.Empty<MenuRecipesResponse>();
 }

@@ -6,15 +6,15 @@ namespace Application.Ingredients;
 
 internal static class IngredientConverters
 {
-    internal static IngredientViewModel ConvertToIngredientViewModel(this Ingredient ingredient)
+    internal static IngredientViewCommand ConvertToIngredientViewModel(this Ingredient ingredient)
     {
-        return new IngredientViewModel()
+        return new IngredientViewCommand()
         {
             Id = ingredient.Id,
             Name = ingredient.Name,
             Price = ingredient.Price,
             Table = ingredient.IngredientUnits
-               .Select(x => (new UnitViewModel() { Id = x.UnitId, Name =  x?.Unit?.Name }, x.Required().Coeficient))
+               .Select(x => (new UnitViewCommand( x.UnitId, x?.Unit?.Name ), x.Required().Coeficient))
                .ToDictionary(y => y.Item1, y => y.Item2),
             UnitId = ingredient.UnitId
         };

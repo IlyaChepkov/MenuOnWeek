@@ -35,44 +35,45 @@ internal sealed class IngredientService : IIngredientService
         this.ingredientUnitsRepository = ingredientUnitsRepository;
     }
 
-    public void Add(CreateIngredientModel createRequest)
+    public async Task Add(CreateIngredientCommand createRequest, CancellationToken token)
     {
-        var unit = unitRepository.GetAll(x => x.Id == createRequest.UnitId).Single();
+        var unit = await unitRepository.GetById(createRequest.UnitId, token);
         var ingredient = Ingredient
             .Create(createRequest.Name, createRequest.Price, unit);
         var table = createRequest.Table;
 
-        MainUnitBaseChecker(ingredient);
+        MainUnitBaseChecker(ingredient, token);
         TableUnitBaseChecker(ingredient);
 
-        ingredientRepository.Add(ingredient);
+        await ingredientRepository.Add(ingredient, CancellationToken.None);
 
-        ingredientUnitsRepository.AddRange(createRequest.Table.Select(x => IngredientUnits.Create(ingredient.Id, x.Key.Id, x.Value)).ToList());
+        await ingredientUnitsRepository.AddRange(createRequest.Table.Select(x => IngredientUnits.Create(ingredient.Id, x.Key.Id, x.Value)).ToList(), token);
     }
 
-    public IReadOnlyList<IngredientViewModel> GetAll(int offset, int limit)
+    public async Task<IReadOnlyList<IngredientViewCommand>> GetAll(int offset, int limit, CancellationToken token)
     {
-        return ingredientRepository.
-            GetAll(x => true).
+        var ingredients = await ingredientRepository.
+            GetAll(token);
+        return ingredients.
             Skip(offset).
             Take(limit).
             Select(x => x.ConvertToIngredientViewModel()).
             ToList();
     }
 
-    public void Remove(Guid id)
+    public async Task Remove(Guid id, CancellationToken token)
     {
-        var ingredient = ingredientRepository.GetById(id);
-        ingredientRepository.Remove(ingredient);
+        var ingredient = await ingredientRepository.GetById(id, token);
+        await ingredientRepository.Remove(ingredient, token);
     }
 
-    public void Update(UpdateIngredientModel updateRequest)
+    public async Task Update(UpdateIngredientCommand updateRequest, CancellationToken token)
     {
-        var ingredient = ingredientRepository.GetById(updateRequest.Id);
+        var ingredient = await ingredientRepository.GetById(updateRequest.Id, token);
         var currentUnit = ingredient.Unit.Required();
 
         ingredient.UnitId = updateRequest.UnitId;
-        ingredient.Unit = unitRepository.GetById(updateRequest.UnitId);
+        ingredient.Unit = await unitRepository.GetById(updateRequest.UnitId, token);
         ingredient.Name = updateRequest.Name;
         ingredient.Price = updateRequest.Price;
         if (currentUnit.Id != updateRequest.UnitId)
@@ -97,57 +98,58 @@ internal sealed class IngredientService : IIngredientService
 
         List<IngredientUnits> updateList = ingredient.IngredientUnits.Where(x => updateRequest.Table.Any(y => y.Key.Id == x.IngredientId)).ToList();
 
-        updateList = ingredientUnitsRepository.GetAll(x => x.IngredientId == ingredient.Id && updateRequest.Table.Any(y => y.Key.Id == x.UnitId && y.Value != x.Coeficient)).ToList();
+        updateList = ingredientUnitsRepository.GetAll(token).Result.Where(x => x.IngredientId == ingredient.Id && updateRequest.Table.Any(y => y.Key.Id == x.UnitId && y.Value != x.Coeficient)).ToList();
             updateList.ForEach(x => x.Coeficient = updateRequest.Table.Single( y => x.UnitId == y.Key.Id).Value);
 
-        ingredientUnitsRepository.RemoveRange(deleteList);
+        await ingredientUnitsRepository.RemoveRange(deleteList, token);
 
-        ingredientUnitsRepository.UpdateRange(updateList);
+        await ingredientUnitsRepository.UpdateRange(updateList, token);
 
-        ingredientUnitsRepository.AddRange(addList);
+        await ingredientUnitsRepository.AddRange(addList, token);
 
-        MainUnitBaseChecker(ingredient);
+        MainUnitBaseChecker(ingredient, token);
         TableUnitBaseChecker(ingredient);
 
-        ingredientRepository.Update(ingredient);
+        await ingredientRepository.Update(ingredient, token);
     }
 
-    IngredientViewModel IIngredientService.GetById(Guid id)
+    public async Task<IngredientViewCommand> GetById(Guid id, CancellationToken token)
     {
-        var ingredient = ingredientRepository.GetAll(x => x.Id == id).Single();
+        var ingredient = await ingredientRepository.GetById(id, token);
         return ingredient.ConvertToIngredientViewModel();
     }
 
-    IngredientViewModel? IIngredientService.GetByName(string name)
+    public async Task<IngredientViewCommand?> GetByName(string name, CancellationToken token)
     {
-        var ingredient = ingredientRepository.GetAll(x => x.Name == name).SingleOrDefault();
+        var ingredient = await ingredientRepository.GetByName(name, token);
         if (ingredient is null)
         {
             return null;
         }
-        return new IngredientViewModel()
+        return new IngredientViewCommand()
         {
             Id = ingredient.Id,
             Name = ingredient.Name,
             Price = ingredient.Price,
             Table = ingredient.IngredientUnits
-               .Select(x => (new UnitViewModel() { Id = x.UnitId, Name = x.Unit?.Name }, x.Coeficient))
+               .Select(x => (new UnitViewCommand( x.UnitId, x.Unit.Required().Name ), x.Coeficient))
                .ToDictionary(y => y.Item1, y => y.Item2),
             UnitId = ingredient.UnitId
         };
         ;
     }
 
-    IReadOnlyList<IngredientViewModel> IIngredientService.GetByPartName(string namePart, int offset, int limit)
+    public async Task<IReadOnlyList<IngredientViewCommand>> GetByPartName(string namePart, int offset, int limit, CancellationToken token)
     {
-        return ingredientRepository
-            .GetAll(x => x.Name.ToLower().Contains(namePart.ToLower()))
+        var ingerdient = await ingredientRepository
+            .GetByPartName(namePart, token);
+        return ingerdient
             .Skip(offset)
             .Take(limit)
             .Select(x => x.ConvertToIngredientViewModel()).ToList();
     }
 
-    private void MainUnitBaseChecker(Ingredient ingredient)
+    private void MainUnitBaseChecker(Ingredient ingredient, CancellationToken token)
     {
         for (int i = 0; i < baseUnits.Length; i++)
         {
@@ -161,9 +163,9 @@ internal sealed class IngredientService : IIngredientService
                         {
                             ingredientUnitsRepository.Add(IngredientUnits.Create(
                                 ingredient.Id,
-                                unitRepository.GetAll(x => x.Id == baseUnits[i][k].id).Single().Id,
+                                unitRepository.GetById(baseUnits[i][k].id, token).Result.Id,
                                 baseUnits[i][k].transform / (double)baseUnits[i][j].transform
-                                ));
+                                ), CancellationToken.None);
                         }
                     }
                     return;
@@ -192,7 +194,7 @@ internal sealed class IngredientService : IIngredientService
                                 ingredientUnitsRepository.Add(IngredientUnits.Create(
                                     ingredient.Id,
                                     unit,
-                                    baseUnits[j][a].transform / (double)baseUnits[j][k].transform * transform));
+                                    baseUnits[j][a].transform / (double)baseUnits[j][k].transform * transform), CancellationToken.None);
                             }
                         }
                         return;

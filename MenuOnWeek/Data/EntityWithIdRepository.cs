@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Data;
 using MenuOnWeek.Application;
 using MenuOnWeek.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace MenuOnWeek.Data;
 
@@ -16,20 +17,20 @@ internal class EntityWithIdRepository<TEntity> : BaseRepository<TEntity>, IEntit
 
     }
 
-    public void Remove(Guid id)
+    public async Task Remove(Guid id, CancellationToken token)
     {
         dataContext.Set<TEntity>().Remove(dataContext.Set<TEntity>().Single(x => x.Id == id));
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public void RemoveRange(List<Guid> id)
+    public async Task RemoveRange(List<Guid> id, CancellationToken token)
     {
         dataContext.Set<TEntity>().RemoveRange(dataContext.Set<TEntity>().Where(x => id.Any(y => y == x.Id)));
-        dataContext.SaveChanges();
+        await dataContext.SaveChangesAsync();
     }
 
-    public virtual TEntity GetById(Guid id)
+    public virtual Task<TEntity> GetById(Guid id, CancellationToken token)
     {
-        return dataContext.Set<TEntity>().Single(x => x.Id == id);
+        return dataContext.Set<TEntity>().SingleAsync(x => x.Id == id, token);
     }
 }

@@ -16,6 +16,11 @@ public sealed class IngredientCreateRequest
     public Guid? UnitId { get; set; }
 
     /// <summary>
+    /// Цена Ингредиента
+    /// </summary>
+    public int? Price { get; set; }
+
+    /// <summary>
     /// Таблица единиц измерения
     /// </summary>
     public IReadOnlyList<IngredientUnitsCreateOrUpdateRequest> Units { get; set; } = Array.Empty<IngredientUnitsCreateOrUpdateRequest>();

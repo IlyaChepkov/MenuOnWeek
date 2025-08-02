@@ -20,5 +20,5 @@ public sealed class MenuCreateRequest
     /// <summary>
     /// Блюда меню
     /// </summary>
-    public IReadOnlyList<MenuRecipesCreateOrUpdateRequest> MenuRecipes { get; set; } = new List<MenuRecipesCreateOrUpdateRequest>();
+    public IReadOnlyList<MenuRecipesCreateOrUpdateRequest> MenuRecipes { get; set; } = Array.Empty<MenuRecipesCreateOrUpdateRequest>();
 }

@@ -7,7 +7,7 @@ using Application.Units;
 
 namespace MenuOnWeek.Application.Recipes;
 
-public sealed class QuantityModel
+public sealed class QuantityCommand
 {
     public int Count { get; set; }
 

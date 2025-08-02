@@ -1,6 +1,5 @@
 ﻿using Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
 
 namespace MenuOnWeek.Data;

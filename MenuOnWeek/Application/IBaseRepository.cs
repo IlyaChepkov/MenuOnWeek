@@ -2,17 +2,17 @@
 
 public interface IBaseRepository<TEntity>
 {
-    void Add(TEntity entity);
+    public Task Add(TEntity entity, CancellationToken token);
 
-    void AddRange(List<TEntity> entities);
+    public Task AddRange(List<TEntity> entities, CancellationToken token);
 
-    IReadOnlyList<TEntity> GetAll(Func<TEntity, bool> predicate);
+    public Task<IReadOnlyList<TEntity>> GetAll(CancellationToken token);
 
-    void Update(TEntity entity);
+    public Task Update(TEntity entity, CancellationToken token);
 
-    void UpdateRange(List<TEntity> entities);
+    public Task UpdateRange(List<TEntity> entities, CancellationToken token);
 
-    void Remove(TEntity entity);
+    public Task Remove(TEntity entity, CancellationToken token);
 
-    void RemoveRange(List<TEntity> entities);
+    public Task RemoveRange(List<TEntity> entities, CancellationToken token);
 }

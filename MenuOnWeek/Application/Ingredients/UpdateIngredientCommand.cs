@@ -7,7 +7,7 @@ using Application.Units;
 
 namespace Application.Ingredients;
 
-public sealed class UpdateIngredientModel
+public sealed class UpdateIngredientCommand
 {
     public required Guid Id { get; set; }
 
@@ -17,5 +17,5 @@ public sealed class UpdateIngredientModel
 
     public required Guid UnitId { get; set; }
 
-    public required Dictionary<UnitViewModel, double> Table { get; set; } = new Dictionary<UnitViewModel, double>();
+    public required Dictionary<UnitViewCommand, double> Table { get; set; } = new Dictionary<UnitViewCommand, double>();
 }
