@@ -33,13 +33,13 @@
             Ingredient = new DataGridViewComboBoxColumn();
             Count = new DataGridViewTextBoxColumn();
             Unit = new DataGridViewComboBoxColumn();
-            Image = new PictureBox();
+            ImageBox = new PictureBox();
             RecipeName = new TextBox();
             Price = new TextBox();
             saveFileDialog = new SaveFileDialog();
             Description = new TextBox();
             ((System.ComponentModel.ISupportInitialize)IngredientsTable).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)Image).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ImageBox).BeginInit();
             SuspendLayout();
             // 
             // IngredientsTable
@@ -72,19 +72,19 @@
             Unit.Resizable = DataGridViewTriState.True;
             Unit.SortMode = DataGridViewColumnSortMode.Automatic;
             // 
-            // Image
+            // ImageBox
             // 
-            Image.BackgroundImage = Properties.Resources.no_photo__lg;
-            Image.BorderStyle = BorderStyle.FixedSingle;
-            Image.Image = Properties.Resources.no_photo__lg;
-            Image.InitialImage = (Image)resources.GetObject("Image.InitialImage");
-            Image.Location = new Point(244, 14);
-            Image.Name = "Image";
-            Image.Size = new Size(209, 195);
-            Image.SizeMode = PictureBoxSizeMode.Zoom;
-            Image.TabIndex = 1;
-            Image.TabStop = false;
-            Image.MouseClick += Image_MouseClick;
+            ImageBox.BackgroundImage = Properties.Resources.no_photo__lg;
+            ImageBox.BorderStyle = BorderStyle.FixedSingle;
+            ImageBox.Image = Properties.Resources.no_photo__lg;
+            ImageBox.InitialImage = (Image)resources.GetObject("ImageBox.InitialImage");
+            ImageBox.Location = new Point(244, 14);
+            ImageBox.Name = "ImageBox";
+            ImageBox.Size = new Size(209, 195);
+            ImageBox.SizeMode = PictureBoxSizeMode.Zoom;
+            ImageBox.TabIndex = 1;
+            ImageBox.TabStop = false;
+            ImageBox.MouseClick += Image_MouseClick;
             // 
             // RecipeName
             // 
@@ -116,12 +116,12 @@
             Controls.Add(Description);
             Controls.Add(Price);
             Controls.Add(RecipeName);
-            Controls.Add(Image);
+            Controls.Add(ImageBox);
             Controls.Add(IngredientsTable);
             Name = "RecipeForm";
             Size = new Size(819, 348);
             ((System.ComponentModel.ISupportInitialize)IngredientsTable).EndInit();
-            ((System.ComponentModel.ISupportInitialize)Image).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ImageBox).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -129,7 +129,7 @@
         #endregion
 
         private DataGridView IngredientsTable;
-        private PictureBox Image;
+        private PictureBox ImageBox;
         private TextBox RecipeName;
         private TextBox Price;
         private SaveFileDialog saveFileDialog;

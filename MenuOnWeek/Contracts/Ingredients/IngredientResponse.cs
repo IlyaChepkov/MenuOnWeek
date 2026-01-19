@@ -16,6 +16,11 @@ public sealed class IngredientResponse
     public string? Name { get; set; }
 
     /// <summary>
+    /// Цена ингредиента
+    /// </summary>
+    public int? Price { get; set; }
+
+    /// <summary>
     /// Id единицы измерения
     /// </summary>
     public Guid? UnitId { get; set; }

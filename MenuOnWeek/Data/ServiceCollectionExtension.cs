@@ -1,4 +1,5 @@
-﻿using MenuOnWeek.Application.Ingredients;
+﻿using MenuOnWeek.Application.Files;
+using MenuOnWeek.Application.Ingredients;
 using MenuOnWeek.Application.Menus;
 using MenuOnWeek.Application.Recipes;
 using MenuOnWeek.Data;
@@ -31,8 +32,6 @@ public static class ServiceCollectionExtension
         services.AddTransient<IIngredientUnitsRepository, IngredientUnitsRepository>();
         services.AddTransient<IRecipeIngredientsRepository, RecipeIngredientsRepository>();
         services.AddTransient<IMenuRecipesRepository, MenuRecipesRepository>();
-
-
 
         return services;
     }

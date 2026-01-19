@@ -7,8 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MenuOnWeek.Application.Menus;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Clients.Menus;
+using MenuOnWeek.Contracts.Menus;
+using MenuOnWeek.Domain.Menus;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuOnWeek.Frontend.Menu;
@@ -16,11 +17,11 @@ namespace MenuOnWeek.Frontend.Menu;
 public partial class AddMenuForm : Form
 {
     private MenuForm menuForm;
-    private IMenuService menuService;
+    private IMenuClient menuClient;
 
     public AddMenuForm()
     {
-        menuService = Program.ServiceProvider.GetRequiredService<IMenuService>();
+        menuClient = Program.ServiceProvider.GetRequiredService<IMenuClient>();
 
         InitializeComponent();
 
@@ -45,19 +46,18 @@ public partial class AddMenuForm : Form
 
         statusStrip1.Items[0].Text = "";
 
-        var addMenuModel = new CreateMenuCommand()
-        {
-            Name = menuDto.Name,
-            MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
-            {
+        var addMenuModel = new MenuCreateRequest() {
+
+             Name = menuDto.Name,
+             MenuType = menuDto.MenuType,
+             MenuRecipes = menuDto.Recipes.Select(x => new MenuRecipesCreateOrUpdateRequest() {
                 RecipeId = x.RecipeId,
-                ServeCount = x.ServeCount,
-                Date = x.Date,
+                Serve = x.ServeCount,
+                DaysOfWeek = x.Date,
                 Meal = x.Meal
-            }).ToList(),
-            MenuType = menuDto.MenuType
+            }).ToList()
         };
-        menuService.Add(addMenuModel, CancellationToken.None);
+        menuClient.Add(addMenuModel, CancellationToken.None);
         Close();
     }
 }

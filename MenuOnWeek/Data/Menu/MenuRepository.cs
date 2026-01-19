@@ -1,7 +1,6 @@
-﻿using Domain;
-using MenuOnWeek.Data;
+﻿using MenuOnWeek.Data;
+using MenuOnWeek.Domain.Menus;
 using Microsoft.EntityFrameworkCore;
-using Utils;
 
 namespace Data;
 
@@ -12,12 +11,17 @@ internal sealed class MenuRepository : EntityWithIdRepository<Menu>, IMenuReposi
 
     }
 
-    public override async Task<IReadOnlyList<Menu>> GetAll(CancellationToken token)
+    public override async Task<IReadOnlyList<Menu>> Get(int offset, int limit, CancellationToken token)
     {
         return await dataContext.Set<Menu>()
             .AsNoTracking()
             .Include(x => x.MenuRecipes)
             .ThenInclude(x => x.Recipe)
+            .ThenInclude(x => x.RecipeIngredients)
+            .ThenInclude(x => x.Ingredient)
+            .ThenInclude(x => x.IngredientUnits)
+            .Skip(offset)
+            .Take(limit)
             .ToListAsync(token);
     }
 
@@ -27,6 +31,9 @@ internal sealed class MenuRepository : EntityWithIdRepository<Menu>, IMenuReposi
             .AsNoTracking()
             .Include(x => x.MenuRecipes)
             .ThenInclude(x => x.Recipe)
+            .ThenInclude(x => x.RecipeIngredients)
+            .ThenInclude(x => x.Ingredient)
+            .ThenInclude(x => x.IngredientUnits)
             .SingleOrDefaultAsync(x => x.Name == name, token);
     }
 }

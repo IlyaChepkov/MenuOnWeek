@@ -1,28 +1,25 @@
 ﻿using System.Collections.Immutable;
-using Application.Ingredients;
-using Application.Units;
-using MenuOnWeek.Application.Recipes;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Clients.Recipes;
+using MenuOnWeek.Clients.Ingredients;
+using MenuOnWeek.Clients.Units;
+using MenuOnWeek.Contracts.Ingredients;
 using MenuOnWeek.Frontend.Ingredient;
-using MenuOnWeek.Frontend.Menu;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
+using System.Xaml.Permissions;
 
 namespace MenuOnWeek.Frontend;
 
 public partial class IngredientsControl : UserControl
 {
-    private readonly IRecipeService recipeService;
-    private readonly IIngredientService ingredientService;
-    private readonly IUnitService unitService;
     private IngredientForm? ingredientForm;
+    private readonly IRecipeClient recipeClient;
+    private readonly IIngredientClient ingredientClient;
 
     public IngredientsControl()
     {
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
-        ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
-
+        recipeClient = Program.ServiceProvider.GetRequiredService<IRecipeClient>();
+        ingredientClient = Program.ServiceProvider.GetRequiredService<IIngredientClient>();
         InitializeComponent();
 
         RefreshIngridentList();
@@ -30,9 +27,14 @@ public partial class IngredientsControl : UserControl
 
     private void RefreshIngridentList()
     {
-        var ingredients = ingredientService.GetAll(0, 100, CancellationToken.None).Result.Required().OrderBy(x => x.Name).ToArray();
+        var ingredientsTask = ingredientClient.GetAll(0, 100, CancellationToken.None);
         IngredientsList.Items.Clear();
-        IngredientsList.Items.AddRange(ingredients);
+        ingredientsTask.Wait();
+        IReadOnlyList<IngredientResponse> ingredients = ingredientsTask.Result.Required();
+        IngredientsList.Items.AddRange(ingredients.Select(x => x)
+            .OrderBy(x => x.Name)
+            .Select(x => x.Name.Required())
+            .ToArray());
     }
 
     private void AddButton_Click(object sender, EventArgs e)
@@ -51,7 +53,9 @@ public partial class IngredientsControl : UserControl
             return;
         }
 
-        var ingredient = IngredientsList.SelectedItem as IngredientViewCommand;
+        var ingredient = ingredientClient.GetByName(
+            IngredientsList.SelectedItem.ToString().Required(),
+            CancellationToken.None).Result;
 
         if (ingredientForm is not null)
         {
@@ -95,16 +99,16 @@ public partial class IngredientsControl : UserControl
 
         statusStrip1.Items[0].Text = "";
 
-        UpdateIngredientCommand ingredient = new UpdateIngredientCommand()
+        IngredientUpdateRequest ingredient = new IngredientUpdateRequest()
         {
-            Id = (IngredientsList.SelectedItem as IngredientViewCommand).Required().Id,
+            Id = ingredientClient.GetByName(IngredientsList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required().Id,
             Name = ingredientDto.Name,
             Price = ingredientDto.Price,
             UnitId = ingredientDto.UnitId,
-            Table = ingredientDto.Table.Select(x => (unitService.GetById(x.Key, CancellationToken.None).Result, x.Value)).ToDictionary()
+            Units = ingredientDto.Table.Select(x => new IngredientUnitsCreateOrUpdateRequest() { UnitId = x.Key, Coeficient = x.Value }).ToList()
         };
 
-        ingredientService.Update(ingredient, CancellationToken.None);
+        ingredientClient.Update(ingredient, CancellationToken.None);
 
         int index = IngredientsList.SelectedIndex;
 
@@ -119,13 +123,13 @@ public partial class IngredientsControl : UserControl
         {
             if (IngredientsList.SelectedItem is not null)
             {
-                if (recipeService.GetAll(0, 1000, CancellationToken.None).Result.Required()
-            .Any(x => x.Ingredients.Keys.Any(y => y == (IngredientsList.SelectedItem as IngredientViewCommand).Required().Id)))
+                if (recipeClient.GetAll(0, 1000, CancellationToken.None).Result.Required()
+            .Any(x => x.Ingredients.Any(y => y.IngredientId == (IngredientsList.SelectedItem as IngredientResponse).Required().Id)))
                 {
                     statusStrip1.Items[0].Text = "Этот элемент используется";
                     return;
                 }
-                ingredientService.Remove((IngredientsList.SelectedItem as IngredientViewCommand).Required().Id, CancellationToken.None);
+                ingredientClient.Remove(ingredientClient.GetByName(IngredientsList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None);
 
                 RefreshIngridentList();
                 Controls.Remove(ingredientForm);

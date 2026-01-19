@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Data;
-using Domain;
+﻿using Data;
 using MenuOnWeek.Application.Ingredients;
+using MenuOnWeek.Domain.Ingredients;
 
 namespace MenuOnWeek.Data.Ingredients;
 
@@ -13,6 +8,6 @@ internal sealed class IngredientUnitsRepository : BaseRepository<IngredientUnits
 {
     public IngredientUnitsRepository(DataContext dataContext) : base(dataContext)
     {
-        
+
     }
 }

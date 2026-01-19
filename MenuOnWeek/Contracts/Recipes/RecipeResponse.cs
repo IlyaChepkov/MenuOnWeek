@@ -16,6 +16,11 @@ public sealed class RecipeResponse
     public string? Name { get; set; }
 
     /// <summary>
+    /// Идентификатор изображения рецепта
+    /// </summary>
+    public Guid? ImageId { get; set; }
+
+    /// <summary>
     /// Описание рецепта
     /// </summary>
     public string? Description { get; set; }

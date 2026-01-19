@@ -1,6 +1,9 @@
 ﻿using System.Data;
-using Application.Ingredients;
-using Application.Units;
+using System.Runtime.InteropServices.Marshalling;
+using System.Threading.Tasks;
+using MenuOnWeek.Clients.Units;
+using MenuOnWeek.Contracts.Ingredients;
+using MenuOnWeek.Contracts.Units;
 using MenuOnWeek.Frontend.Ingredient;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
@@ -9,43 +12,52 @@ namespace MenuOnWeek.Frontend;
 
 public partial class IngredientForm : UserControl
 {
-    private List<UnitViewCommand> usingUnits = new();
-    private IUnitService unitService;
+    private List<UnitResponse> usingUnits = new();
+    private readonly IUnitClient unitClient;
 
-    private IngredientViewCommand currentIngredient;
+    private IngredientResponse currentIngredient;
 
     public IngredientForm()
     {
+        unitClient = Program.ServiceProvider.GetRequiredService<IUnitClient>();
+
         InitializeComponent();
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
-        currentIngredient = new IngredientViewCommand()
+        
+        currentIngredient = new IngredientResponse()
         {
+
             Id = Guid.Empty,
             Name = "",
             Price = 0,
             UnitId = Guid.Empty,
-            Table = new Dictionary<UnitViewCommand, double>()
+            Units = new List<IngredientUnitsResponse>()
         };
-        usingUnits = new List<UnitViewCommand>();
+        usingUnits = new List<UnitResponse>();
     }
 
-    public IngredientForm(IngredientViewCommand ingredient)
+    public IngredientForm(IngredientResponse ingredient)
     {
+        unitClient = Program.ServiceProvider.GetRequiredService<IUnitClient>();
+
         InitializeComponent();
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
+
         currentIngredient = ingredient;
         IngredientName.Text = ingredient.Name;
-        UnitsList.Items.Add(unitService.Required().GetById(ingredient.UnitId, CancellationToken.None));
+        var unitTask = unitClient.Required().GetById(ingredient.UnitId, CancellationToken.None).Required();
+        UnitsList.Items.Add(unitTask.Result.Name.Required());
         UnitsList.SelectedIndex = 0;
-        PriceNumericUpDown.Value = ingredient.Price;
-        usingUnits = currentIngredient.Table.Keys.ToList();
+        PriceNumericUpDown.Value = ingredient.Price.Required();
+        usingUnits = currentIngredient.Units.Select(x => unitClient.GetById(x.UnitId, CancellationToken.None).Result).ToList();
+
         GridRefresh();
     }
 
     private void UnitsList_TextUpdate(object sender, EventArgs e)
     {
+        var names = unitClient.GetByNamePart(UnitsList.Text, 0, 10, CancellationToken.None).Result;
+
         UnitsList.Items.Clear();
-        UnitsList.Items.AddRange(unitService.GetByNamePart(UnitsList.Text, 0, 5, CancellationToken.None).Result.ToArray());
+        UnitsList.Items.AddRange(names.Select(x => x.Name.Required()).ToArray());
         UnitsList.SelectionStart = UnitsList.Text.Length;
         UnitsList.DroppedDown = true;
     }
@@ -54,41 +66,62 @@ public partial class IngredientForm : UserControl
     {
         if (e.KeyCode == Keys.Enter)
         {
-            var unit = unitService.GetByName(UnitsList.Text, CancellationToken.None);
+
+            UnitResponse? unit = unitClient.GetByName(UnitsList.Text, CancellationToken.None).Result;
             if (unit is not null)
             {
-                currentIngredient.UnitId = unit.Result.Required().Id;
+                currentIngredient.UnitId = unit.Required().Id;
             }
             else
             {
-                var createUnit = new CreateUnitCommand(UnitsList.Text);
-                unitService.Add(createUnit, CancellationToken.None);
-                UnitsList.Items.Add(new UnitViewCommand(unitService.GetByName(createUnit.Name.Required(), CancellationToken.None).Result.Required().Id, Name = createUnit.Name));
+                var createUnit = new UnitCreateRequest() { Name = UnitsList.Text };
+                unitClient.Add(createUnit, CancellationToken.None);
+                UnitResponse response = unitClient.GetByName(UnitsList.Text, CancellationToken.None).Result.Required();
+                UnitsList.Items.Add(new UnitResponse()
+                {
+                    Id = unitClient.GetByName(createUnit.Name.Required(), CancellationToken.None).Result.Required().Id.Required(),
+                    Name = createUnit.Name
+                });
+                currentIngredient.UnitId = response.Id;
             }
         }
     }
 
     private void UnitsList_SelectedIndexChanged(object sender, EventArgs e)
     {
-        var unit = UnitsList.SelectedItem as UnitViewCommand;
-
-        if (currentIngredient.UnitId != unit.Required().Id)
+        var selectedUnit = UnitsList.SelectedItem;
+        string name;
+        if (selectedUnit == null)
         {
-            for (int i = 0; i < currentIngredient.Table.Keys.Count; i++)
+            name = UnitsList.Text;
+        }
+        else
+        {
+           name = selectedUnit.ToString().Required();
+        }
+
+        UnitResponse? unit = unitClient.GetByName(
+            name,
+            CancellationToken.None).Result;
+
+        if (unit is not null && currentIngredient.UnitId != unit.Required().Id)
+        {
+            /*for (int i = 0; i < currentIngredient.IngredientUnits.Keys.Count; i++)
             {
-                if (currentIngredient.Table.Keys.ElementAt(i).Id == unit.Required().Id)
+                if (currentIngredient.IngredientUnits.Keys.ElementAt(i).Id == unit.Required().Id)
                 {
-                    var removeRequest = currentIngredient.Table.Keys.ElementAt(i);
-                    currentIngredient.Table.Add(unitService.GetById(currentIngredient.UnitId, CancellationToken.None).Result,
-                        1 / currentIngredient.Table[removeRequest]);
-                    currentIngredient.Table.Remove(removeRequest);
+                    var removeRequest = currentIngredient.IngredientUnits.Keys.ElementAt(i);
+                    currentIngredient.IngredientUnits.Add(unitService.GetById(currentIngredient.UnitId, CancellationToken.None).Result,
+                        1 / currentIngredient.IngredientUnits[removeRequest]);
+                    currentIngredient.IngredientUnits.Remove(removeRequest);
 
                     break;
                 }
             }
+            */
         }
 
-        currentIngredient.UnitId = unit.Required().Id;
+        //currentIngredient.UnitId = unit.Required().Id;
 
         GridRefresh();
     }
@@ -97,16 +130,16 @@ public partial class IngredientForm : UserControl
     {
         UnitsTable.Rows.Clear();
         UnitsTable.Rows
-            .AddRange(new DataGridViewRow[currentIngredient.Table.Count]
+            .AddRange(new DataGridViewRow[currentIngredient.Units.Count]
                 .Select(x => x = new DataGridViewRow()).ToArray());
 
-        usingUnits = currentIngredient.Table.Keys.ToList();
+        usingUnits = currentIngredient.Units.Select(x => unitClient.GetById(x.UnitId, CancellationToken.None).Result).ToList();
 
         for (int i = 0; i < UnitsTable.Rows.Count; i++)
         {
             var comboBoxCell = (UnitsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-            var dataSource = unitService.GetAll(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
+            var dataSource = unitClient.Get(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
                     && usingUnits.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
 
             if (i + 1 < UnitsTable.Rows.Count)
@@ -123,7 +156,7 @@ public partial class IngredientForm : UserControl
 
                 var valueCell = (UnitsTable.Rows[i].Cells[1] as DataGridViewCell).Required();
 
-                valueCell.Value = currentIngredient.Table.Values.ElementAt(i);
+                valueCell.Value = currentIngredient.Units[i].Coeficient;
             }
         }
     }
@@ -138,7 +171,7 @@ public partial class IngredientForm : UserControl
             Guid unitId = Guid.Empty;
             if (UnitsTable.Rows[i].Cells[0].Value is not null)
             {
-                unitId = unitService.GetByName(UnitsTable.Rows[i].Cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Id;
+                unitId = unitClient.GetByName(UnitsTable.Rows[i].Cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Id.Required();
             }
             double value = 0;
             if (UnitsTable.Rows[i].Cells[1].Value is not null)
@@ -154,7 +187,10 @@ public partial class IngredientForm : UserControl
         Guid id = Guid.Empty;
         if (UnitsList.SelectedItem is not null)
         {
-            id = (UnitsList.SelectedItem as UnitViewCommand).Required().Id;
+            var name = UnitsList.SelectedItem.Required().ToString();
+            id = unitClient.GetByName(
+                name,
+                CancellationToken.None).Result.Required().Id.Required();
         }
 
         return new IngredientDto(
@@ -174,13 +210,13 @@ public partial class IngredientForm : UserControl
                 {
                     usingUnits.RemoveAt(e.RowIndex);
                 }
-                usingUnits.Add(unitService.GetByName(UnitsTable.Rows[e.RowIndex].Cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required());
+                usingUnits.Add(unitClient.GetByName(UnitsTable.Rows[e.RowIndex].Cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required());
 
                 for (int i = 0; i < UnitsTable.Rows.Count; i++)
                 {
                     var cell = (UnitsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-                    var list = unitService.GetAll(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
+                    var list = unitClient.Get(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
                             && usingUnits.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
 
                     if (i + 1 < UnitsTable.Rows.Count)
@@ -204,7 +240,7 @@ public partial class IngredientForm : UserControl
             {
                 var cell = (UnitsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-                var list = unitService.GetAll(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
+                var list = unitClient.Get(0, 100, CancellationToken.None).Result.Where(x => x.Id != currentIngredient.UnitId
                         && usingUnits.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
 
                 if (i + 1 < UnitsTable.Rows.Count)

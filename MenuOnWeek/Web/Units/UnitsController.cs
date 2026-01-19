@@ -3,53 +3,52 @@ using System.Xml.Linq;
 using Application.Units;
 using MenuOnWeek.Contracts;
 using MenuOnWeek.Contracts.Units;
+using MenuOnWeek.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Utils;
 
 namespace MenuOnWeek.Web.Units;
 
+/// <summary>
+/// Контроллер единиц измерения
+/// </summary>
 [ApiController]
 public sealed class UnitsController : ControllerBase
 {
     private readonly IUnitService unitService;
 
+    /// <summary>
+    /// Конструктор UnitController
+    /// </summary>
+    /// <param name="unitService"></param>
     public UnitsController(IUnitService unitService)
     {
         this.unitService = unitService;
     }
 
+    /// <summary>
+    /// Добавляет единицу измерения
+    /// </summary>
     [HttpPost(ApiResource.Units)]
-    public async Task<IActionResult> Add(UnitCerateRequest request, CancellationToken token)
+    public async Task<IActionResult> Add(UnitCreateRequest request, CancellationToken token)
     {
-        // Валидация. Проверить, что в request нормальные данные
-        if (String.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new ArgumentNullException();
-        }
-        // Конвератция превратить request в command
+        ValidationException<string?>.ThrowIfNull(request.Name);
+
         var command = new CreateUnitCommand(request.Name);
 
-        // Вызвать слой Application
         await unitService.Add(command, token);
         return Ok();
     }
 
+    /// <summary>
+    /// Возвращает все единицы измерения, начиная с offset и заканчиная limit
+    /// </summary>
     [HttpGet(ApiResource.Units)]
-    public async Task<IReadOnlyList<UnitResponse>> GetAll(int? limit, int? offset, CancellationToken token)
+    public async Task<IReadOnlyList<UnitResponse>> GetAll(int? offset, int? limit, CancellationToken token)
     {
-        // Валидация. Проверить, что в request нормальные данные
-        if (!limit.HasValue || !offset.HasValue)
-        {
-            throw new ArgumentNullException();
-        }
-        if (limit.Value < 1 || offset.Value < 0)
-        {
-            throw new ArgumentException();
-        }
-        // Конвератция превратить request в command
-
-        // Вызвать слой Application
-        var units = await unitService.GetAll(offset.Value, limit.Value, token);
+        ValidationException<int?>.ThrowIfNull(offset);
+        ValidationException<int?>.ThrowIfNull(limit);
+        var units = await unitService.Get(offset.Required(), limit.Required(), token);
 
         return units.Select(x => new UnitResponse
         {
@@ -58,17 +57,14 @@ public sealed class UnitsController : ControllerBase
         }).ToList();
     }
 
+    /// <summary>
+    /// Обновляет единицу измерения
+    /// </summary>
     [HttpPut(ApiResource.Units)]
     public async Task<IActionResult> Update(UnitUpdateRequest request, CancellationToken token)
     {
-        if (request.Id is null || request.Id == Guid.Empty)
-        {
-            throw new ArgumentNullException();
-        }
-        if (String.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new ArgumentNullException();
-        }
+        ValidationException<Guid?>.ThrowIf(x => x is null || x == Guid.Empty, request.Id, "Идентификатор не может быть пустым");
+        ValidationException<string?>.ThrowIfNull(request.Name);
 
         await unitService.Update(new UpdateUnitCommand(
         
@@ -80,24 +76,27 @@ public sealed class UnitsController : ControllerBase
         return Ok();
     }
 
+    /// <summary>
+    /// Удаляет единицу измерения
+    /// </summary>
     [HttpDelete(ApiResource.UnitsById)]
     public async Task<IActionResult> Remove(Guid? id, CancellationToken token)
     {
-        if (id is null || id == Guid.Empty)
-        {
-            throw new ArgumentNullException();
-        }
+        ValidationException<Guid?>.ThrowIf(x => x is null || x == Guid.Empty, id, "Идентификатор не может быть пустым");
+
         await unitService.Remove(id ?? Guid.NewGuid(), token);
         return Ok();
     }
 
+
+    /// <summary>
+    /// Возвращает единицу измерения по id
+    /// </summary>
     [HttpGet(ApiResource.UnitsById)]
     public async Task<UnitResponse> GetById(Guid? id, CancellationToken token)
     {
-        if (id is null || id == Guid.Empty)
-        {
-            throw new ArgumentNullException();
-        }
+        ValidationException<Guid?>.ThrowIf(x => x is null || x == Guid.Empty, id, "Идентификатор не может быть пустым");
+
         var units = await unitService.GetById(id ?? Guid.NewGuid(), token);
 
         return new UnitResponse
@@ -107,13 +106,14 @@ public sealed class UnitsController : ControllerBase
         };
     }
 
+    /// <summary>
+    /// Вовращает единицу измерения поназванию
+    /// </summary>
     [HttpGet(ApiResource.UnitsByName)]
     public async Task<UnitResponse> GetByName(string? name, CancellationToken token)
     {
-        if (String.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException();
-        }
+        ValidationException<string?>.ThrowIfNull(name);
+
         var units = await unitService.GetByName(name ?? String.Empty, token);
 
         if (units is null)
@@ -129,7 +129,9 @@ public sealed class UnitsController : ControllerBase
     }
 
 
-
+    /// <summary>
+    /// Вовращает все единицы измерения содержащие подстроку namePart в названии
+    /// </summary>
     [HttpGet(ApiResource.UnitsByNamePart)]
     public async Task<IReadOnlyList<UnitResponse>> GetByNamePart(
         string? namePart,
@@ -137,25 +139,16 @@ public sealed class UnitsController : ControllerBase
         [FromQuery] int? limit,
         CancellationToken token)
     {
-        if (!limit.HasValue || !offset.HasValue)
-        {
-            throw new ArgumentNullException();
-        }
-        if (limit.Value < 1 || offset.Value < 0)
-        {
-            throw new ArgumentException();
-        }
-        if (String.IsNullOrWhiteSpace(namePart))
-        {
-            throw new ArgumentNullException();
-        }
+        ValidationException<int?>.ThrowIfNull(offset);
+        ValidationException<int?>.ThrowIfNull(limit);
+        ValidationException<string?>.ThrowIfNull(namePart);
 
-        var units = await unitService.GetByNamePart(namePart, offset.Value, limit.Value, token);
+        var units = await unitService.GetByNamePart(namePart.Required(), offset.Required(), limit.Required(), token);
 
         if (units is null)
         {
             HttpContext.Response.StatusCode = 404;
-            throw new KeyNotFoundException();
+            throw new InvalidOperationException();
         }
 
         return units.Select(x => new UnitResponse
@@ -165,14 +158,17 @@ public sealed class UnitsController : ControllerBase
         }).ToList();
     }
 
+    /// <summary>
+    /// Возвращает все все единицы измерения ингредиента
+    /// </summary>
     [HttpGet(ApiResource.UnitsByIngredient)]
-    public async Task<IReadOnlyList<UnitResponse>> GetByIngredient(Guid? ingredientId, CancellationToken token)
+    public async Task<IReadOnlyList<UnitResponse>> GetByIngredient(Guid? ingredient, CancellationToken token)
     {
-        if (ingredientId is null || ingredientId == Guid.Empty)
+        if (ingredient is null || ingredient == Guid.Empty)
         {
             throw new ArgumentNullException();
         }
-        var units = await unitService.GetByIngredient(ingredientId ?? Guid.NewGuid(), token);
+        var units = await unitService.GetByIngredient(ingredient ?? Guid.NewGuid(), token);
 
         if (units is null)
         {

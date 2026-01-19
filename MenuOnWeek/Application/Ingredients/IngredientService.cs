@@ -1,11 +1,11 @@
-﻿// Ignore Spelling: Repository
-
-using Application.Units;
+﻿using Application.Units;
 using Data;
-using Domain;
 using MenuOnWeek.Application.Ingredients;
+using MenuOnWeek.Application.Menus;
 using MenuOnWeek.Data.Ingredients;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Domain.Ingredients;
+using MenuOnWeek.Utils;
+using Microsoft.Extensions.Logging;
 using Utils;
 
 namespace Application.Ingredients;
@@ -15,6 +15,7 @@ internal sealed class IngredientService : IIngredientService
     private readonly IIngredientRepository ingredientRepository;
     private readonly IUnitRepository unitRepository;
     private readonly IIngredientUnitsRepository ingredientUnitsRepository;
+    private readonly ILogger logger;
 
     private readonly (Guid id, int transform)[][] baseUnits =
         [
@@ -28,15 +29,22 @@ internal sealed class IngredientService : IIngredientService
             ]
         ];
 
-    public IngredientService(IIngredientRepository ingredientRepository, IUnitRepository unitRepository, IIngredientUnitsRepository ingredientUnitsRepository)
+    public IngredientService(IIngredientRepository ingredientRepository,
+        IUnitRepository unitRepository,
+        IIngredientUnitsRepository ingredientUnitsRepository,
+        ILogger<IngredientService> logger)
     {
         this.ingredientRepository = ingredientRepository;
         this.unitRepository = unitRepository;
         this.ingredientUnitsRepository = ingredientUnitsRepository;
+        this.logger = logger;
     }
 
     public async Task Add(CreateIngredientCommand createRequest, CancellationToken token)
     {
+        var name = await GetByName(createRequest.Name, token);
+        ValidationException<IngredientView?>.ThrowIf(x => x is not null, name, "Ингредиент с таким именем уже существует");
+
         var unit = await unitRepository.GetById(createRequest.UnitId, token);
         var ingredient = Ingredient
             .Create(createRequest.Name, createRequest.Price, unit);
@@ -46,17 +54,19 @@ internal sealed class IngredientService : IIngredientService
         TableUnitBaseChecker(ingredient);
 
         await ingredientRepository.Add(ingredient, CancellationToken.None);
-
         await ingredientUnitsRepository.AddRange(createRequest.Table.Select(x => IngredientUnits.Create(ingredient.Id, x.Key.Id, x.Value)).ToList(), token);
+
+        logger.LogInformation("Добавлен ингредиент с id {Id} названием {Name}", ingredient.Id, ingredient.Name);
     }
 
-    public async Task<IReadOnlyList<IngredientViewCommand>> GetAll(int offset, int limit, CancellationToken token)
+    public async Task<IReadOnlyList<IngredientView>> GetAll(int offset, int limit, CancellationToken token)
     {
+        ValidationException<int>.ThrowIf(x => x < 0, offset, "Начальное значение не может быть меньше 0");
+        ValidationException<int>.ThrowIf(x => x < 1, limit, "Размер выборки не может быть меньше 1");
+
         var ingredients = await ingredientRepository.
-            GetAll(token);
+            Get(offset, limit, token);
         return ingredients.
-            Skip(offset).
-            Take(limit).
             Select(x => x.ConvertToIngredientViewModel()).
             ToList();
     }
@@ -65,10 +75,14 @@ internal sealed class IngredientService : IIngredientService
     {
         var ingredient = await ingredientRepository.GetById(id, token);
         await ingredientRepository.Remove(ingredient, token);
+        logger.LogInformation("Удален ингредиент с id {Id}", id);
     }
 
     public async Task Update(UpdateIngredientCommand updateRequest, CancellationToken token)
     {
+        var name = await GetByName(updateRequest.Name, token);
+        ValidationException<IngredientView?>.ThrowIf(x => x is not null && x.Id != updateRequest.Id, name, "Ингредиент с таким именем уже существует");
+
         var ingredient = await ingredientRepository.GetById(updateRequest.Id, token);
         var currentUnit = ingredient.Unit.Required();
 
@@ -78,11 +92,11 @@ internal sealed class IngredientService : IIngredientService
         ingredient.Price = updateRequest.Price;
         if (currentUnit.Id != updateRequest.UnitId)
         {
-            for (int i = 0; i < updateRequest.Table.Keys.Count; i++)
+            for (int i = 0; i < updateRequest.Table.Keys.Count(); i++)
             {
                 if (updateRequest.Table.Keys.ElementAt(i).Id == updateRequest.UnitId)
                 {
-                    updateRequest.Table.Remove(updateRequest.Table.Keys.ElementAt(i));
+                    //updateRequest.Table.Remove(updateRequest.Table.Keys.ElementAt(i));
                     break;
                 }
             }
@@ -96,9 +110,11 @@ internal sealed class IngredientService : IIngredientService
             .ToList();
         ;
 
-        List<IngredientUnits> updateList = ingredient.IngredientUnits.Where(x => updateRequest.Table.Any(y => y.Key.Id == x.IngredientId)).ToList();
+        List<IngredientUnits> updateList = ingredient.IngredientUnits
+            .Where(x => updateRequest.Table.Any(y => y.Key.Id == x.UnitId))
+            .ToList();
 
-        updateList = ingredientUnitsRepository.GetAll(token).Result.Where(x => x.IngredientId == ingredient.Id && updateRequest.Table.Any(y => y.Key.Id == x.UnitId && y.Value != x.Coeficient)).ToList();
+        updateList = ingredientUnitsRepository.Get(0, await ingredientUnitsRepository.Count(token), token).Result.Where(x => x.IngredientId == ingredient.Id && updateRequest.Table.Any(y => y.Key.Id == x.UnitId && y.Value != x.Coeficient)).ToList();
             updateList.ForEach(x => x.Coeficient = updateRequest.Table.Single( y => x.UnitId == y.Key.Id).Value);
 
         await ingredientUnitsRepository.RemoveRange(deleteList, token);
@@ -111,42 +127,43 @@ internal sealed class IngredientService : IIngredientService
         TableUnitBaseChecker(ingredient);
 
         await ingredientRepository.Update(ingredient, token);
+
+        logger.LogInformation("Обновлен ингредиент с id {Id}", ingredient.Id);
     }
 
-    public async Task<IngredientViewCommand> GetById(Guid id, CancellationToken token)
+    public async Task<IngredientView> GetById(Guid id, CancellationToken token)
     {
         var ingredient = await ingredientRepository.GetById(id, token);
         return ingredient.ConvertToIngredientViewModel();
     }
 
-    public async Task<IngredientViewCommand?> GetByName(string name, CancellationToken token)
+    public async Task<IngredientView?> GetByName(string name, CancellationToken token)
     {
         var ingredient = await ingredientRepository.GetByName(name, token);
         if (ingredient is null)
         {
             return null;
         }
-        return new IngredientViewCommand()
-        {
-            Id = ingredient.Id,
-            Name = ingredient.Name,
-            Price = ingredient.Price,
-            Table = ingredient.IngredientUnits
-               .Select(x => (new UnitViewCommand( x.UnitId, x.Unit.Required().Name ), x.Coeficient))
-               .ToDictionary(y => y.Item1, y => y.Item2),
-            UnitId = ingredient.UnitId
-        };
-        ;
+        return new IngredientView(
+
+            ingredient.Id,
+            ingredient.Name,
+            ingredient.Price,
+            ingredient.UnitId,
+            ingredient.IngredientUnits
+               .Select(x => (new UnitView(x.UnitId, x?.Unit?.Name), x.Required().Coeficient))
+               .ToDictionary(y => y.Item1, y => y.Item2)
+        );
     }
 
-    public async Task<IReadOnlyList<IngredientViewCommand>> GetByPartName(string namePart, int offset, int limit, CancellationToken token)
+    public async Task<IReadOnlyList<IngredientView>> GetByPartName(string namePart, int offset, int limit, CancellationToken token)
     {
+        ValidationException<int>.ThrowIf(x => x < 0, offset, "Начальное значение не может быть меньше 0");
+        ValidationException<int>.ThrowIf(x => x < 1, limit, "Размер выборки не может быть меньше 1");
+
         var ingerdient = await ingredientRepository
-            .GetByPartName(namePart, token);
-        return ingerdient
-            .Skip(offset)
-            .Take(limit)
-            .Select(x => x.ConvertToIngredientViewModel()).ToList();
+            .GetByPartName(namePart, offset, limit, token);
+        return ingerdient.Select(x => x.ConvertToIngredientViewModel()).ToList();
     }
 
     private void MainUnitBaseChecker(Ingredient ingredient, CancellationToken token)

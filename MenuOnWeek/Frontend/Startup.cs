@@ -1,5 +1,6 @@
 ﻿using Application;
 using Data;
+using MenuOnWeek.Clients;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,7 @@ internal static class Startup
 
         service.AddData();
         service.AddApplication();
+        service.AddClients();
         return service.BuildServiceProvider();
     }
 }

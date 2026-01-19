@@ -6,7 +6,7 @@ namespace MenuOnWeek.Frontend.Recipe;
 
 public sealed record RecipeDto(string Name,
     string Description,
-    string? Image,
+    Guid? Image,
     Dictionary<Guid, QuantityDto> Ingredients,
     bool IsImageChanged
 

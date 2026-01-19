@@ -1,14 +1,18 @@
 ﻿using MenuOnWeek.Domain;
+using MenuOnWeek.Domain.Menus;
 
 namespace MenuOnWeek.Application.Menus;
 
-public sealed class MenuElementViewModel
-{
-    public Guid RecipeId { get; set; }
+/// <summary>
+/// Модель для просмотра элементов меню
+/// </summary>
+public sealed record MenuElementView
+(
+    Guid RecipeId,
 
-    public int ServeCount { get; set; }
+    int ServeCount,
 
-    public DaysOfWeek? Date { get; set; }
+    DaysOfWeek? Date,
 
-    public Meal? Meal { get; set; }
-}
+    Meal? Meal
+);

@@ -1,16 +1,16 @@
-﻿using Application.Ingredients;
-using MenuOnWeek.Application.Recipes;
+﻿using MenuOnWeek.Clients.Recipes;
+using MenuOnWeek.Contracts.Recipes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuOnWeek.Frontend.Recipe;
 
 public partial class AddRecipeForm : Form
 {
-    private IRecipeService recipeService;
+    private IRecipeClient recipeClient;
     private RecipeForm recipeForm;
     public AddRecipeForm()
     {
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
+        recipeClient = Program.ServiceProvider.GetRequiredService<IRecipeClient>();
         InitializeComponent();
         recipeForm = new RecipeForm();
         Controls.Add(recipeForm);
@@ -36,22 +36,24 @@ public partial class AddRecipeForm : Form
             return;
         }
 
-        var createRequest = new RecipeCreateCommand()
+        var createRequest = new RecipeCreateRequest()
         {
+
             Name = recipeDto.Name,
-            Description = recipeDto.Description,
             Image = recipeDto.Image,
-            Ingredients = recipeDto.Ingredients.Select(x => (x.Key, new QuantityCommand()
-                {
-                Count = x.Value.Count,
-                UnitId = x.Value.UnitId
-            })).ToDictionary(x => x.Item1, x => x.Item2)
+            Description = recipeDto.Description,
+            Ingredients = recipeDto.Ingredients.Select(x => new RecipeIngredientsCreateOrUpdateRequest()
+            {
+                IngredientId = x.Key,
+                UnitId = x.Value.UnitId,
+                Count = x.Value.Count
+            }).ToList()
 
         };
 
 
 
-        recipeService.Add(createRequest, CancellationToken.None);
+        recipeClient.Add(createRequest, CancellationToken.None);
         Close();
     }
 }

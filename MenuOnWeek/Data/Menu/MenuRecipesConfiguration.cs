@@ -1,4 +1,4 @@
-﻿using Domain;
+﻿using MenuOnWeek.Domain.Menus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

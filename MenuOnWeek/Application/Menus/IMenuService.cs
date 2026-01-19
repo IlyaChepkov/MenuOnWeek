@@ -1,22 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Domain;
+﻿namespace MenuOnWeek.Application.Menus;
 
-namespace MenuOnWeek.Application.Menus;
-
+/// <summary>
+/// Сервис для работы с меню
+/// </summary>
 public interface IMenuService
 {
+    /// <summary>
+    /// Создает меню
+    /// </summary>
     Task Add(CreateMenuCommand entity, CancellationToken token);
 
-    Task<IReadOnlyList<MenuViewModel>> GetAll(int offset, int limit, CancellationToken token);
+    /// <summary>
+    /// Возвращает все меню начиная с offset и заканчивая limit
+    /// </summary>
+    Task<IReadOnlyList<MenuView>> GetAll(int offset, int limit, CancellationToken token);
 
-    Task Update(MenuUpdateModel entity, CancellationToken token);
+    /// <summary>
+    /// Обновляет меню
+    /// </summary>
+    Task Update(MenuUpdateCommand entity, CancellationToken token);
 
+    /// <summary>
+    /// Удаляет меню
+    /// </summary>
     Task Remove(Guid entity, CancellationToken token);
 
-    Task<MenuViewModel?> GetByName(string name, CancellationToken token);
+    /// <summary>
+    /// Возвращает меню по названию
+    /// </summary>
+    Task<MenuView?> GetByName(string name, CancellationToken token);
 }

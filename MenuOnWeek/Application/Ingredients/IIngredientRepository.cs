@@ -1,12 +1,21 @@
 ﻿using Data;
-using Domain;
 using MenuOnWeek.Application;
+using MenuOnWeek.Domain.Ingredients;
 
 namespace MenuOnWeek.Data.Ingredients;
 
+/// <summary>
+/// Репозиторий для работы с ингредиентами
+/// </summary>
 public interface IIngredientRepository : IBaseRepository<Ingredient>, IEntityWithIdRepository<Ingredient>
 {
-    Task<Ingredient?> GetByName(string name, CancellationToken token);
+    /// <summary>
+    /// Возвращает ингредиент по названию
+    /// </summary>
+    public Task<Ingredient?> GetByName(string name, CancellationToken token);
 
-    Task<IReadOnlyList<Ingredient>> GetByPartName(string partName, CancellationToken token);
+    /// <summary>
+    /// Возвращает список ингредиентов по части названия
+    /// </summary>
+    public Task<IReadOnlyList<Ingredient>> GetByPartName(string partName, int offset, int limit, CancellationToken token);
 }

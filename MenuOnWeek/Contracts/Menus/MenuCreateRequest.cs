@@ -1,6 +1,7 @@
-﻿using MenuOnWeek.Domain;
+﻿using MenuOnWeek.Domain.Menus;
 
 namespace MenuOnWeek.Contracts.Menus;
+
 /// <summary>
 /// Меню
 /// </summary>

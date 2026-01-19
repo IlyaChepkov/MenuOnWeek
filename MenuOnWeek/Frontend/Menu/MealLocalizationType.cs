@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using System.Xml.Linq;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Domain.Menus;
 using Utils;
 
 namespace MenuOnWeek.Frontend.Menu;

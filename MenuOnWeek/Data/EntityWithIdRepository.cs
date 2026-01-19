@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Data;
+﻿using Data;
 using MenuOnWeek.Application;
 using MenuOnWeek.Domain;
 using Microsoft.EntityFrameworkCore;
+using Utils;
 
 namespace MenuOnWeek.Data;
 
-internal class EntityWithIdRepository<TEntity> : BaseRepository<TEntity>, IEntityWithIdRepository<TEntity> where TEntity : class, IEntityWithId
+internal class EntityWithIdRepository<TEntity> :
+    BaseRepository<TEntity>, IEntityWithIdRepository<TEntity> where TEntity : class, IEntityWithId
 {
     public EntityWithIdRepository(DataContext dataContext) : base(dataContext)
     {
@@ -23,14 +20,24 @@ internal class EntityWithIdRepository<TEntity> : BaseRepository<TEntity>, IEntit
         await dataContext.SaveChangesAsync(token);
     }
 
-    public async Task RemoveRange(List<Guid> id, CancellationToken token)
+    public async Task RemoveRange(IReadOnlyList<Guid> ids, CancellationToken token)
     {
-        dataContext.Set<TEntity>().RemoveRange(dataContext.Set<TEntity>().Where(x => id.Any(y => y == x.Id)));
-        await dataContext.SaveChangesAsync();
+        dataContext.Set<TEntity>().RemoveRange(dataContext.Set<TEntity>().Where(x => ids.Any(y => y == x.Id)));
+        await dataContext.SaveChangesAsync(token);
     }
 
-    public virtual Task<TEntity> GetById(Guid id, CancellationToken token)
+    public virtual async Task<TEntity> GetById(Guid id, CancellationToken token)
     {
-        return dataContext.Set<TEntity>().SingleAsync(x => x.Id == id, token);
+        var entity = await ById(id).SingleOrDefaultAsync(token);
+        if (entity is null)
+        {
+            throw new KeyNotFoundException($"Сущность {typeof(TEntity).Name} с идентификатором {id} не найдена");
+        }
+        return entity;
+    }
+
+    protected IQueryable<TEntity> ById(Guid id)
+    {
+        return dataContext.Set<TEntity>().Where(x => x.Id == id);
     }
 }

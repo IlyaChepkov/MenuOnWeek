@@ -7,9 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MenuOnWeek.Application.Menus;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Clients.Menus;
+using MenuOnWeek.Contracts.Menus;
 using Microsoft.Extensions.DependencyInjection;
+using MenuOnWeek.Domain.Menus;
 using Utils;
 
 namespace MenuOnWeek.Frontend.Menu
@@ -17,13 +18,13 @@ namespace MenuOnWeek.Frontend.Menu
     public partial class MenuControl : UserControl
     {
 
-        private IMenuService menuService;
+        private IMenuClient menuclient;
 
         private MenuForm? menuForm;
 
         public MenuControl()
         {
-            menuService = Program.ServiceProvider.GetRequiredService<IMenuService>();
+            menuclient = Program.ServiceProvider.GetRequiredService<IMenuClient>();
             InitializeComponent();
 
             RefreshMenusList();
@@ -33,7 +34,7 @@ namespace MenuOnWeek.Frontend.Menu
         {
             MenusList.Items.Clear();
 
-            MenusList.Items.AddRange(menuService.GetAll(0, 100, CancellationToken.None).Result.Required().Select(x => x.Name).OrderBy(x => x).ToArray());
+            MenusList.Items.AddRange(menuclient.GetAll(0, 100, CancellationToken.None).Result.Required().Select(x => x.Name.Required()).OrderBy(x => x).ToArray());
         }
 
         private void AddButton_Click(object sender, EventArgs e)
@@ -64,23 +65,22 @@ namespace MenuOnWeek.Frontend.Menu
 
                 statusStrip1.Items[0].Text = "";
 
-                var updateRequest = new MenuUpdateModel()
+                var updateRequest = new MenuUpdateRequest()
                 {
-                    Id = menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required().Id,
+                    Id = menuclient.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required().Id,
                     Name = menuDto.Name,
                     MenuType = menuDto.MenuType,
-                    MenuRecipes = menuDto.Recipes.Select(x => new MenuElementModel()
-                    {
+                    MenuRecipes = menuDto.Recipes.Select(x => new MenuRecipesCreateOrUpdateRequest() { 
                         RecipeId = x.RecipeId,
-                        Date = x.Date,
-                        Meal = x.Meal,
-                        ServeCount = x.ServeCount
+                        Serve = x.ServeCount,
+                        DaysOfWeek = x.Date,
+                        Meal = x.Meal
                     }).ToList()
                 };
-                menuService.Update(updateRequest, CancellationToken.None);
+                menuclient.Update(updateRequest, CancellationToken.None);
 
                 Controls.Remove(menuForm);
-                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required());
+                menuForm = new MenuForm(menuclient.GetByName(MenusList.SelectedItem.Required().ToString().Required(), CancellationToken.None).Result.Required());
                 Controls.Add(menuForm);
                 menuForm.Location = new Point(200, 5);
             }
@@ -95,7 +95,7 @@ namespace MenuOnWeek.Frontend.Menu
                     Controls.Remove(menuForm);
                 }
 
-                menuForm = new MenuForm(menuService.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required());
+                menuForm = new MenuForm(menuclient.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required());
                 Controls.Add(menuForm);
 
                 menuForm.Location = new Point(200, 5);
@@ -108,7 +108,7 @@ namespace MenuOnWeek.Frontend.Menu
             {
                 if (MenusList.SelectedItem is not null)
                 {
-                    menuService.Remove(menuService.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None).Required();
+                    menuclient.Remove(menuclient.GetByName(MenusList.SelectedItem.ToString().Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None).Required();
                     RefreshMenusList();
                     Controls.Remove(menuForm);
                     menuForm = null;

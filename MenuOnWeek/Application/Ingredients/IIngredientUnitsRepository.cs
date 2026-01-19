@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Data;
-using Domain;
+﻿using Data;
+using MenuOnWeek.Domain.Ingredients;
 
 namespace MenuOnWeek.Application.Ingredients;
 
+/// <summary>
+/// Репозиторий для работы с IngredientUnits
+/// </summary>
 public interface IIngredientUnitsRepository : IBaseRepository<IngredientUnits>
 {
 }

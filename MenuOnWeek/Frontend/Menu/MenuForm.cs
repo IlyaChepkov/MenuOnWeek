@@ -1,6 +1,8 @@
-﻿using MenuOnWeek.Application.Menus;
-using MenuOnWeek.Application.Recipes;
+﻿using MenuOnWeek.Clients.Menus;
+using MenuOnWeek.Clients.Recipes;
+using MenuOnWeek.Contracts.Menus;
 using MenuOnWeek.Domain;
+using MenuOnWeek.Domain.Menus;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
 
@@ -9,27 +11,28 @@ namespace MenuOnWeek.Frontend.Menu;
 public partial class MenuForm : UserControl
 {
 
-    private IMenuService menuService;
-    private IRecipeService recipeService;
+    private IMenuClient menuClient;
+    private IRecipeClient recipeClient;
 
     private List<DaysOfWeekLocalizationType> daysOfWeekList;
     private List<MealLocalizationType> mealList;
 
     private MenuType menuType;
 
-    private MenuViewModel currentMenu = new()
-    {
+    private MenuResponse currentMenu = new() {
+
         Id = Guid.Empty,
         Name = "",
+        MenuType = MenuType.MenuOnWeek,
         Price = 0,
-        Recipes = []
+        MenuRecipes = []
     };
 
     public MenuForm()
     {
 
-        menuService = Program.ServiceProvider.GetRequiredService<IMenuService>();
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
+        menuClient = Program.ServiceProvider.GetRequiredService<IMenuClient>();
+        recipeClient = Program.ServiceProvider.GetRequiredService<IRecipeClient>();
 
         daysOfWeekList = new List<DaysOfWeekLocalizationType>();
         foreach (DaysOfWeek dt in Enum.GetValues(typeof(DaysOfWeek)))
@@ -50,10 +53,12 @@ public partial class MenuForm : UserControl
         GridRefresh();
     }
 
-    public MenuForm(MenuViewModel menu)
+    public MenuForm(MenuResponse menu)
     {
-        menuService = Program.ServiceProvider.GetRequiredService<IMenuService>();
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
+        menuClient = Program.ServiceProvider.GetRequiredService<IMenuClient>();
+        recipeClient = Program.ServiceProvider.GetRequiredService<IRecipeClient>();
+
+        currentMenu = menu;
 
         daysOfWeekList = new List<DaysOfWeekLocalizationType>();
         foreach (DaysOfWeek? dt in Enum.GetValues(typeof(DaysOfWeek)))
@@ -65,17 +70,18 @@ public partial class MenuForm : UserControl
         {
             mealList.Add(new MealLocalizationType(mt));
         }
-
-        currentMenu.Id = menu.Id;
-        currentMenu.Name = menu.Name;
-        currentMenu.Price = menu.Price;
-        currentMenu.Recipes = menu.Recipes.Select(x => x).ToList();
+        
         InitializeComponent();
+
+        //currentMenu.Id = menu.Id;
+        //currentMenu.Name = menu.Name;
+        //currentMenu.Price = menu.Price;
+        //currentMenu.Recipes = menu.Recipes.Select(x => x).ToList();
 
         MenuPrice.Text = menu.Price.ToString();
 
         MenuName.Text = menu.Name;
-        menuType = menu.MenuType;
+        menuType = menu.MenuType.Required();
 
         switch (menuType)
         {
@@ -108,13 +114,13 @@ public partial class MenuForm : UserControl
         RecipesTable.Rows.Clear();
 
         RecipesTable.Rows
-            .AddRange(new DataGridViewRow[currentMenu.Recipes.Count]
+            .AddRange(new DataGridViewRow[currentMenu.MenuRecipes.Required().Count]
                 .Select(x => x = new DataGridViewRow()).ToArray());
 
         for (int i = 0; i < RecipesTable.Rows.Count; i++)
         {
             var recipeComboBoxCell = (RecipesTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
-            recipeComboBoxCell.DataSource = recipeService
+            recipeComboBoxCell.DataSource = recipeClient
                 .GetAll(0, 100, CancellationToken.None).Result.Required()
                 .Select(x => x.Name)
                 .ToList();
@@ -130,18 +136,18 @@ public partial class MenuForm : UserControl
             if (i + 1 < RecipesTable.Rows.Count)
             {
                 var serveTextBoxCell = (RecipesTable.Rows[i].Cells[3] as DataGridViewTextBoxCell).Required();
-                serveTextBoxCell.Value = currentMenu.Recipes[i].ServeCount;
+                serveTextBoxCell.Value = currentMenu.MenuRecipes[i].Serve.Required();
                 switch (menuType)
                 {
                     case MenuType.MenuOnWeek:
                         {
-                            if (currentMenu.Recipes[i].Date is not null)
+                            if (currentMenu.MenuRecipes[i].DaysOfWeek is not null)
                             {
-                                dateComboBoxCell.Value ??= daysOfWeekList.Single(x => x.DayName == new DaysOfWeekLocalizationType(currentMenu.Recipes[i].Date).DayName)?.ToString();
+                                dateComboBoxCell.Value ??= daysOfWeekList.Single(x => x.DayName == new DaysOfWeekLocalizationType(currentMenu.MenuRecipes[i].DaysOfWeek).DayName)?.ToString();
                             }
-                            if (currentMenu.Recipes[i].Meal is not null)
+                            if (currentMenu.MenuRecipes[i].Meal is not null)
                             {
-                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.MenuRecipes[i].Meal).MealName)?.ToString();
                             }
                             
                         }
@@ -149,14 +155,14 @@ public partial class MenuForm : UserControl
 
                     case MenuType.MenuOnDay:
                         {
-                            if (currentMenu.Recipes[i].Meal is not null)
+                            if (currentMenu.MenuRecipes[i].Meal is not null)
                             {
-                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.Recipes[i].Meal).MealName)?.ToString();
+                                mealComboBoxCell.Value ??= mealList.Single(x => x.MealName == new MealLocalizationType(currentMenu.MenuRecipes[i].Meal).MealName)?.ToString();
                             }
                         }
                         break;
                 }
-                recipeComboBoxCell.Value = recipeService.GetById(currentMenu.Recipes[i].RecipeId, CancellationToken.None).Result.Required().Name;
+                recipeComboBoxCell.Value = recipeClient.GetById(currentMenu.MenuRecipes[i].RecipeId, CancellationToken.None).Result.Required().Name;
             }
         }
         switch (menuType)
@@ -187,7 +193,7 @@ public partial class MenuForm : UserControl
     private void RecipesTable_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
     {
         var recipeComboBoxCell = (RecipesTable.Rows[^1].Cells[0] as DataGridViewComboBoxCell).Required();
-        recipeComboBoxCell.DataSource = recipeService
+        recipeComboBoxCell.DataSource = recipeClient
             .GetAll(0, 100, CancellationToken.None).Result.Required()
             .Select(x => x.Name)
             .ToList();
@@ -230,7 +236,7 @@ public partial class MenuForm : UserControl
                Int32.TryParse(cells[3].Value.ToString().Required(), out count);
             }
             menuDto.Recipes.Add(new MenuElementDto(
-                recipeService.GetByName(cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Id,
+                recipeClient.GetByName(cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Id.Required(),
                 count,
                 day,
                 meal));

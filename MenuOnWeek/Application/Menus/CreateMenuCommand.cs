@@ -1,12 +1,12 @@
-﻿using MenuOnWeek.Domain;
+﻿using MenuOnWeek.Domain.Menus;
 
 namespace MenuOnWeek.Application.Menus;
 
-public sealed class CreateMenuCommand
-{
-    public required string Name { get; set; }
-
-    public MenuType MenuType { get; set; }
-
-    public List<MenuElementModel> MenuRecipes { get; set; } = new List<MenuElementModel>();
-}
+/// <summary>
+/// комманда создания меню
+/// </summary>
+public sealed record CreateMenuCommand(
+    string Name,
+    MenuType MenuType,
+    List<CreateOrUpdateMenuElementCommand> MenuRecipes
+);

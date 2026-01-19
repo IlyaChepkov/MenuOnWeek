@@ -1,7 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Data;
-
-using Domain;
+﻿using Data;
+using MenuOnWeek.Domain.Units;
 using Microsoft.EntityFrameworkCore;
 
 namespace MenuOnWeek.Data.Units;
@@ -10,7 +8,7 @@ internal sealed class UnitRepository : EntityWithIdRepository<Unit>, IUnitReposi
 {
     public UnitRepository(DataContext dataContext) : base(dataContext)
     {
-        
+
     }
 
     public Task<Unit?> GetByName(string name, CancellationToken token)
@@ -18,8 +16,12 @@ internal sealed class UnitRepository : EntityWithIdRepository<Unit>, IUnitReposi
         return dataContext.Set<Unit>().SingleOrDefaultAsync(x => x.Name == name, token);
     }
 
-    public async Task<IReadOnlyList<Unit>> GetByPartName(string partName, CancellationToken token)
+    public async Task<IReadOnlyList<Unit>> GetByPartName(string partName, int offset, int limit, CancellationToken token)
     {
-        return await dataContext.Set<Unit>().Where(x => x.Name.ToLower().Contains(partName.ToLower())).ToListAsync(token);
+        return await dataContext.Set<Unit>()
+            .Where(x => x.Name.ToLower().Contains(partName.ToLower()))
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(token);
     }
 }

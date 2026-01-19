@@ -1,5 +1,5 @@
 ﻿using MenuOnWeek.Application.Menus;
-using MenuOnWeek.Domain;
+using MenuOnWeek.Domain.Menus;
 
 namespace MenuOnWeek.Frontend.Menu;
 

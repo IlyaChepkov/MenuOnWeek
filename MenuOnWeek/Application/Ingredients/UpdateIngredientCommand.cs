@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Units;
+﻿using Application.Units;
 
 namespace Application.Ingredients;
 
-public sealed class UpdateIngredientCommand
-{
-    public required Guid Id { get; set; }
-
-    public required string Name { get; set; }
-
-    public required int Price { get; set; }
-
-    public required Guid UnitId { get; set; }
-
-    public required Dictionary<UnitViewCommand, double> Table { get; set; } = new Dictionary<UnitViewCommand, double>();
-}
+/// <summary>
+/// Комманда обновления ингредиента
+/// </summary>
+public sealed record UpdateIngredientCommand
+(
+    Guid Id,
+    string Name,
+    int Price,
+    Guid UnitId,
+    IReadOnlyDictionary<UnitView, double> Table
+);

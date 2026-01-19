@@ -1,6 +1,9 @@
-﻿using Application.Ingredients;
-using Application.Units;
-using MenuOnWeek.Application.Recipes;
+﻿using System.Threading.Tasks;
+using MenuOnWeek.Clients.Files;
+using MenuOnWeek.Clients.Ingredients;
+using MenuOnWeek.Clients.Units;
+using MenuOnWeek.Contracts.Ingredients;
+using MenuOnWeek.Contracts.Recipes;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
 
@@ -8,59 +11,61 @@ namespace MenuOnWeek.Frontend.Recipe;
 
 public partial class RecipeForm : UserControl
 {
-    private IIngredientService ingredientService;
-    private IUnitService unitService;
-    private RecipeViewCommand currentRecipe;
+    private IIngredientClient ingredientClient;
+    private IUnitClient unitClient;
+    public IFileClient fileClient;
+    private RecipeResponse currentRecipe;
     private string? currentImage;
     private bool isImageChanged = false;
     private Image defaultImage;
 
-    private List<IngredientViewCommand> usingIngredients = new List<IngredientViewCommand>();
+    private List<IngredientResponse> usingIngredients = new List<IngredientResponse>();
 
     public RecipeForm()
     {
         defaultImage = System.Drawing.Image.
             FromFile($"{Directory.GetCurrentDirectory()}\\no-photo--lg.png");
-        ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
+        ingredientClient = Program.ServiceProvider.GetRequiredService<IIngredientClient>();
+        unitClient = Program.ServiceProvider.GetRequiredService<IUnitClient>();
+        fileClient = Program.ServiceProvider.GetRequiredService<IFileClient>();
         InitializeComponent();
 
-        currentRecipe = new RecipeViewCommand()
+        currentRecipe = new RecipeResponse()
         {
             Id = Guid.Empty,
             Name = "",
-            Image = null,
-            Description = "",
+            ImageId = null,
             Price = 0,
-            Ingredients = new Dictionary<Guid, QuantityViewModel>()
+            Description = "",
+            Ingredients = new List<RecipeIngredientsResponse>()
         };
         GridRefresh();
     }
 
-    public RecipeForm(RecipeViewCommand recipe)
+    public RecipeForm(RecipeResponse recipe)
     {
-        defaultImage = System.Drawing.Image.
-                FromFile($"{Directory.GetCurrentDirectory()}\\no-photo--lg.png");
-        ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
+        defaultImage = Image.FromFile($"{Directory.GetCurrentDirectory()}\\no-photo--lg.png");
+        ingredientClient = Program.ServiceProvider.GetRequiredService<IIngredientClient>();
+        unitClient = Program.ServiceProvider.GetRequiredService<IUnitClient>();
+        fileClient = Program.ServiceProvider.GetRequiredService<IFileClient>();
         InitializeComponent();
 
         currentRecipe = recipe;
 
         RecipeName.Text = recipe.Name;
         Description.Text = recipe.Description;
-        if (recipe.Image is not null)
+        if (recipe.ImageId is not null)
         {
-            var image = $"{Directory.GetCurrentDirectory()}\\FileStore\\{recipe.Image.ToString().Required()}";
-            Image.Image = System.Drawing.Image.                          // тут ошибка
-                FromFile(image);
-            currentImage = image;
+            var image = fileClient.Get(recipe.ImageId, CancellationToken.None).Result;
+            MemoryStream memoryStream = new MemoryStream(image);
+            ImageBox.Image = Image.FromStream(memoryStream);                         
+            currentImage = recipe.ImageId.ToString();
         }
         Price.Text = recipe.Price.ToString();
         GridRefresh();
     }
 
-    private void GridRefresh()
+    private async void GridRefresh()
     {
 
 
@@ -70,17 +75,17 @@ public partial class RecipeForm : UserControl
             .AddRange(new DataGridViewRow[currentRecipe.Ingredients.Count]
                 .Select(x => x = new DataGridViewRow()).ToArray());
 
-        usingIngredients =
-            currentRecipe.Ingredients.Keys.
-            Select(x => ingredientService.
-                GetById(x, CancellationToken.None).Result.Required()).
+         usingIngredients =
+            currentRecipe.Ingredients.
+            Select( x => ingredientClient.
+                GetById(x.IngredientId, CancellationToken.None).Result.Required()).
             ToList();
 
         for (int i = 0; i < IngredientsTable.Rows.Count; i++)
         {
             var ingredientComboBoxCell = (IngredientsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-            var list = ingredientService.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
+            var list = ingredientClient.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
             if (i + 1 < IngredientsTable.Rows.Count)
             {
                 list.Add(usingIngredients[i].Name);
@@ -89,20 +94,20 @@ public partial class RecipeForm : UserControl
 
             if (i + 1 < IngredientsTable.Rows.Count)
             {
-                var currentIngredient = ingredientService.
-                    GetById(currentRecipe.Ingredients.Keys.Single(x => x == usingIngredients[i].Id), CancellationToken.None);
-                ingredientComboBoxCell.Value = currentIngredient.Result.Required().Name;
+                var currentIngredient = await ingredientClient.
+                    GetById(currentRecipe.Ingredients.Single(x => x.IngredientId == usingIngredients[i].Id).IngredientId, CancellationToken.None);
+                ingredientComboBoxCell.Value = currentIngredient.Required().Name;
 
                 var unitComboBoxCell = (IngredientsTable.Rows[i].Cells[2] as DataGridViewComboBoxCell).Required();
-                unitComboBoxCell.DataSource = unitService.GetByIngredient(ingredientService.GetByName((string)ingredientComboBoxCell.Value, CancellationToken.None).Result.Required().Id, CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
+                unitComboBoxCell.DataSource = unitClient.GetByIngredient(ingredientClient.GetByName((string)ingredientComboBoxCell.Value.Required(), CancellationToken.None).Result.Required().Id, CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
 
 
 
-
-                unitComboBoxCell.Value = unitService.GetById(currentRecipe.Ingredients[currentIngredient.Result.Required().Id].UnitId, CancellationToken.None).Result.Required().Name;
+                var temp = await unitClient.GetById(currentRecipe.Ingredients.Single(x => x.IngredientId == currentIngredient.Id).UnitId, CancellationToken.None).Required();
+                unitComboBoxCell.Value = temp.Name;
 
                 var countCell = (IngredientsTable.Rows[i].Cells[1] as DataGridViewTextBoxCell).Required();
-                countCell.Value = currentRecipe.Ingredients[usingIngredients[i].Id].Count;
+                countCell.Value = currentRecipe.Ingredients.Single(x => x.IngredientId == currentIngredient.Id).Count;
             }
         }
     }
@@ -118,13 +123,17 @@ public partial class RecipeForm : UserControl
                 {
                     usingIngredients.RemoveAt(e.RowIndex);
                 }
-                usingIngredients.Add(ingredientService.GetByName(IngredientsTable.Rows[e.RowIndex].Cells[0].Value.ToString().Required(), CancellationToken.None).Result.Required().Required());
+                usingIngredients.Add(
+                    ingredientClient.GetByName(
+                        IngredientsTable.Rows[e.RowIndex].Cells[0].Value.ToString().Required(),
+                        CancellationToken.None).Result.Required()
+                    );
 
                 for (int i = 0; i < IngredientsTable.Rows.Count; i++)
                 {
                     var ingredientComboBoxCell = (IngredientsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-                    var list = ingredientService.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
+                    var list = ingredientClient.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
 
                     if (i + 1 < IngredientsTable.Rows.Count)
                     {
@@ -133,7 +142,12 @@ public partial class RecipeForm : UserControl
                         if (ingredientComboBoxCell.Value is not null)
                         {
                             var unitComboBoxCell = (IngredientsTable.Rows[i].Cells[2] as DataGridViewComboBoxCell).Required();
-                            unitComboBoxCell.DataSource = unitService.GetByIngredient(ingredientService.GetByName((string)ingredientComboBoxCell.Value, CancellationToken.None).Result.Required().Id, CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
+                            unitComboBoxCell.DataSource = unitClient.GetByIngredient(
+                                 ingredientClient.GetByName(
+                                    (string)ingredientComboBoxCell.Value,
+                                    CancellationToken.None
+                                ).Result.Required().Id,
+                                CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
                         }
                     }
 
@@ -152,15 +166,15 @@ public partial class RecipeForm : UserControl
             var row = IngredientsTable.Rows[i];
 
             Guid ingredient = Guid.Empty;
-            if (row.Cells[0].Value is not null && ingredientService.
+            if (row.Cells[0].Value is not null && ingredientClient.
                     GetByName(row.Cells[0].Value.
                         ToString().
                         Required(), CancellationToken.None) is not null)
             {
-                ingredient = ingredientService.
+                ingredient = ingredientClient.
                     GetByName(row.Cells[0].Value.
                         ToString().
-                        Required(), CancellationToken.None).Result.Required().Id;
+                        Required(), CancellationToken.None).Result.Required().Id.Required();
             }
 
             int count = 0;
@@ -170,17 +184,18 @@ public partial class RecipeForm : UserControl
             }
 
             Guid unit = Guid.Empty;
-            if (row.Cells[2].Value is not null && unitService.
+            if (row.Cells[2].Value is not null && unitClient.
                         GetByName(row.Cells[2].Value.ToString().Required(), CancellationToken.None) is not null)
             {
-                unit = unitService.GetByName(row.Cells[2].Value.ToString().Required(), CancellationToken.None).Result.Required().Id;
+                unit = unitClient.GetByName(row.Cells[2].Value.ToString().Required(), CancellationToken.None).Result.Required().Id.Required();
             }
-            ingredients.Add(ingredient ,
+            ingredients.Add(ingredient,
                     new QuantityDto(
                         unit,
                         count));
         }
-        return new RecipeDto(RecipeName.Text, Description.Text, currentImage, ingredients, isImageChanged);
+        Guid.TryParse((currentImage ?? ".").Split('.').First(), out var result);
+        return new RecipeDto(RecipeName.Text, Description.Text, result, ingredients, isImageChanged);
     }
 
     private void Image_MouseClick(object sender, MouseEventArgs e)
@@ -192,22 +207,28 @@ public partial class RecipeForm : UserControl
                     saveFileDialog.ShowDialog();
                     if (!String.IsNullOrEmpty(saveFileDialog.FileName))
                     {
-                        Image.Image = System.Drawing.Image.
+                        ImageBox.Image = Image.
                             FromFile(saveFileDialog.FileName);
-                        currentImage = saveFileDialog.FileName;
                         isImageChanged = true;
+
+                        currentImage = fileClient.Add(saveFileDialog.FileName.Split('\\').Last(),
+                            File.ReadAllBytes(saveFileDialog.FileName),
+                            CancellationToken.None).Result.ToString();
+
+                        
                     }
                 }
                 break;
 
             case MouseButtons.Right:
                 {
-                    Image.Image = defaultImage;
+                    ImageBox.Image = defaultImage;
                     currentImage = null;
+                    isImageChanged = true;
                 }
                 break;
         }
-        isImageChanged = true;
+        
     }
 
     private void IngredientsTable_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
@@ -220,7 +241,7 @@ public partial class RecipeForm : UserControl
             {
                 var ingredientComboBoxCell = (IngredientsTable.Rows[i].Cells[0] as DataGridViewComboBoxCell).Required();
 
-                var list = ingredientService.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
+                var list =  ingredientClient.GetAll(0, 100, CancellationToken.None).Result.Required().Where(x => usingIngredients.All(y => y.Id != x.Id)).Select(x => x.Name).ToList();
 
                 if (i + 1 < IngredientsTable.Rows.Count)
                 {
@@ -229,7 +250,7 @@ public partial class RecipeForm : UserControl
                     if (ingredientComboBoxCell.Value is not null)
                     {
                         var unitComboBoxCell = (IngredientsTable.Rows[i].Cells[2] as DataGridViewComboBoxCell).Required();
-                        unitComboBoxCell.DataSource = unitService.GetByIngredient(ingredientService.GetByName((string)ingredientComboBoxCell.Value, CancellationToken.None).Result.Required().Id, CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
+                        unitComboBoxCell.DataSource = unitClient.GetByIngredient(ingredientClient.GetByName((string)ingredientComboBoxCell.Value, CancellationToken.None).Result.Required().Id, CancellationToken.None).Result.Required().Select(x => x.Name).ToList();
                     }
                 }
 

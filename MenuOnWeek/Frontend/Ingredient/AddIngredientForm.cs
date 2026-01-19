@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Application.Ingredients;
-using Application.Units;
-using MenuOnWeek.Application.Recipes;
+﻿using MenuOnWeek.Clients.Ingredients;
+using MenuOnWeek.Contracts.Ingredients;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuOnWeek.Frontend.Ingredient;
@@ -18,16 +8,12 @@ public sealed partial class AddIngredientForm : Form
 {
 
     IngredientForm ingredientForm;
-    IIngredientService ingredientService;
-    IUnitService unitService;
+    IIngredientClient ingredientClient;
 
-    IRecipeService recipeService;
 
     public AddIngredientForm()
     {
-        unitService = Program.ServiceProvider.GetRequiredService<IUnitService>();
-        ingredientService = Program.ServiceProvider.GetRequiredService<IIngredientService>();
-        recipeService = Program.ServiceProvider.GetRequiredService<IRecipeService>();
+        ingredientClient = Program.ServiceProvider.GetRequiredService<IIngredientClient>();
         InitializeComponent();
 
         ingredientForm = new IngredientForm();
@@ -40,32 +26,15 @@ public sealed partial class AddIngredientForm : Form
     {
         var ingredientDto = ingredientForm.GetIngredientDto();
 
-        if (String.IsNullOrEmpty(ingredientDto.Name))
+        var createRequest = new IngredientCreateRequest()
         {
-            statusStrip1.Items[0].Text = "У ингредиента нет имени";
-            return;
-        }
-        if (ingredientDto.Price == 0)
-        {
-            statusStrip1.Items[0].Text = "У ингредиента нет цены";
-            return;
-        }
-        if (Guid.Empty == ingredientDto.UnitId)
-        {
-            statusStrip1.Items[0].Text = "У ингредиента нет единицы измерения";
-            return;
-        }
-        if (ingredientDto.Table.Any(x => x.Key == Guid.Empty || x.Value == 0))
-        {
-            statusStrip1.Items[0].Text = "Заполнены не все ячейки таблицы";
-            return;
-        }
+            Name = ingredientDto.Name,
+            Price = ingredientDto.Price,
+            UnitId = ingredientDto.UnitId,
+            Units = ingredientDto.Table.Select(x => new IngredientUnitsCreateOrUpdateRequest() { UnitId = x.Key, Coeficient = x.Value }).ToList()
+        };
 
-        
-
-        var createRequest = new CreateIngredientCommand(ingredientDto.Name, ingredientDto.Price, ingredientDto.UnitId, ingredientDto.Table.Select(x => (unitService.GetById(x.Key, CancellationToken.None).Result, x.Value)).ToDictionary());
-
-        ingredientService.Add(createRequest, CancellationToken.None);
+        ingredientClient.Add(createRequest, CancellationToken.None);
 
         Close();
     }

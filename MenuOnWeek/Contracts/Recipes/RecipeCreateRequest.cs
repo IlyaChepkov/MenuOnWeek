@@ -19,7 +19,7 @@ public sealed class RecipeCreateRequest
     /// <summary>
     /// Картинка рецепта
     /// </summary>
-    public string? Image {  get; set; }
+    public Guid? Image {  get; set; }
 
     /// <summary>
     /// Ингредиенты рецепта

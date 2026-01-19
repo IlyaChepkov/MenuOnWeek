@@ -1,5 +1,6 @@
 ﻿using Application.Ingredients;
 using Application.Units;
+using MenuOnWeek.Application.Files;
 using MenuOnWeek.Application.Menus;
 using MenuOnWeek.Application.Recipes;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ public static class ServiceCollectionExtension
         services.AddTransient<IRecipeService, RecipeService>();
         services.AddTransient<IIngredientService, IngredientService>();
         services.AddTransient<IUnitService, UnitService>();
+        services.AddTransient<IFileService, FileService>();
+
         return services;
     }
 }

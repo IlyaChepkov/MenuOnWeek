@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Domain;
-using MenuOnWeek.Application;
+﻿using MenuOnWeek.Application;
+using MenuOnWeek.Domain.Recipes;
 
 namespace Data;
 
+/// <summary>
+/// Репозиторий для работы с рецептами
+/// </summary>
 public interface IRecipeRepository : IEntityWithIdRepository<Recipe>
 {
-    Task<Recipe?> GetByName(string name, CancellationToken token);
+    /// <summary>
+    /// Возвращает рецепт по имени
+    /// </summary>
+    public Task<Recipe?> GetByName(string name, CancellationToken token);
 }

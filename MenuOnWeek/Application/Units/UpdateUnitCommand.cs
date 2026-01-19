@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Application.Units;
 
-namespace Application.Units;
 
+/// <summary>
+/// Комманда обновления единицы измерения
+/// </summary>
 public sealed record UpdateUnitCommand(Guid Id, string? Name);
