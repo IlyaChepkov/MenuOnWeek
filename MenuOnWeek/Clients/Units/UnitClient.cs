@@ -71,6 +71,10 @@ internal sealed class UnitClient : IUnitClient
     }
     public async Task<IReadOnlyList<UnitResponse>> GetByNamePart(string? namePart, int offset, int limit, CancellationToken token)
     {
+        if (namePart == "")
+        {
+            throw new ArgumentException("Часть имени не может быть пустой");
+        }
         var result = await httpClient.GetAsync(baseUri + ApiResource.UnitsByNamePart.Replace("{namePart}", namePart) + ApiResource.GetPaginationQuery(limit, offset), token).ConfigureAwait(false);
         if (!result.IsSuccessStatusCode)
         {

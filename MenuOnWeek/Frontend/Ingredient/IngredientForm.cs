@@ -54,7 +54,11 @@ public partial class IngredientForm : UserControl
 
     private void UnitsList_TextUpdate(object sender, EventArgs e)
     {
-        var names = unitClient.GetByNamePart(UnitsList.Text, 0, 10, CancellationToken.None).Result;
+        IReadOnlyList<UnitResponse> names = new List<UnitResponse>();
+        if (!(UnitsList.Text == ""))
+        {
+            names = unitClient.GetByNamePart(UnitsList.Text, 0, 10, CancellationToken.None).Result;
+        }
 
         UnitsList.Items.Clear();
         UnitsList.Items.AddRange(names.Select(x => x.Name.Required()).ToArray());

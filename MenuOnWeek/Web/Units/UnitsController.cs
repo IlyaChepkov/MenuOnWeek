@@ -143,13 +143,7 @@ public sealed class UnitsController : ControllerBase
         ValidationException<int?>.ThrowIfNull(limit);
         ValidationException<string?>.ThrowIfNull(namePart);
 
-        var units = await unitService.GetByNamePart(namePart.Required(), offset.Required(), limit.Required(), token);
-
-        if (units is null)
-        {
-            HttpContext.Response.StatusCode = 404;
-            throw new InvalidOperationException();
-        }
+        IReadOnlyList<UnitView> units = await unitService.GetByNamePart(namePart.Required(), offset.Required(), limit.Required(), token);
 
         return units.Select(x => new UnitResponse
         {

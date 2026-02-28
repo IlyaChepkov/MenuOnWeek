@@ -4,6 +4,7 @@ using MenuOnWeek.Application.Recipes;
 using MenuOnWeek.Domain.Menus;
 using MenuOnWeek.Utils;
 using Microsoft.Extensions.Logging;
+using Utils;
 
 namespace MenuOnWeek.Application.Menus;
 
@@ -90,34 +91,16 @@ internal sealed class MenuService : IMenuService
         menu.Name = updateRequest.Name;
 
         menu.MenuType = updateRequest.MenuType;
-        var updateRecipeIds = updateRequest.MenuRecipes.Select(x => x.RecipeId).ToList();
-
-        List<MenuRecipes> deleteList = menu.MenuRecipes
-            .Where(x => !updateRecipeIds.Contains(x.RecipeId))
-            .ToList();
-
-        await menuRecipesRepository.RemoveRange(deleteList, token);
-
-        List<MenuRecipes> updateList = menu.MenuRecipes
-            .Where(x => updateRecipeIds.Contains(x.RecipeId))
-            .ToList();
-        updateList.ForEach(x =>
-        {
-            x.Date = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).Date;
-            x.Meal = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).Meal;
-            x.Serve = updateRequest.MenuRecipes.Single(y => y.RecipeId == x.RecipeId).ServeCount;
-        });
-
-        await menuRecipesRepository.UpdateRange(updateList, token);
-
-        var nowRecipeIds = menu.MenuRecipes.Select(x => x.Id).ToList();
-
-        List<MenuRecipes> addList = updateRequest.MenuRecipes
-            .Where(x => !nowRecipeIds.Contains(x.RecipeId))
-            .Select(x => MenuRecipes.Create(menu.Id, recipeRepository.GetById(x.RecipeId, token).Result, x.ServeCount, x.Date, x.Meal))
-            .ToList();
-
-        await menuRecipesRepository.AddRange(addList, token);
+        await menuRecipesRepository.RemoveRange(await menuRecipesRepository.Get(0, Int32.MaxValue, CancellationToken.None), CancellationToken.None);
+        var menuRecipes = updateRequest.MenuRecipes.Select(async x => MenuRecipes.Create(
+            menu.Id,
+            await recipeRepository.GetById(x.RecipeId, CancellationToken.None),
+            x.ServeCount,
+            x.Date,
+            x.Meal
+            )).Select(x => x.Result).ToList();
+        await menuRecipesRepository.AddRange(menuRecipes,
+            CancellationToken.None);
 
         await menuRepository.Update(menu, token);
         logger.LogInformation("Обновлено меню с id {Id}", menu.Id);

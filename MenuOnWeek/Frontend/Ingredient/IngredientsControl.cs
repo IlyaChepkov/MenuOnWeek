@@ -1,12 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using MenuOnWeek.Clients.Ingredients;
 using MenuOnWeek.Clients.Recipes;
-using MenuOnWeek.Clients.Ingredients;
-using MenuOnWeek.Clients.Units;
 using MenuOnWeek.Contracts.Ingredients;
 using MenuOnWeek.Frontend.Ingredient;
 using Microsoft.Extensions.DependencyInjection;
 using Utils;
-using System.Xaml.Permissions;
 
 namespace MenuOnWeek.Frontend;
 
@@ -43,7 +40,6 @@ public partial class IngredientsControl : UserControl
         ingredientForm.ShowDialog();
 
         RefreshIngridentList();
-
     }
 
     private void IngredientsList_SelectedIndexChanged(object sender, EventArgs e)
@@ -124,7 +120,11 @@ public partial class IngredientsControl : UserControl
             if (IngredientsList.SelectedItem is not null)
             {
                 if (recipeClient.GetAll(0, 1000, CancellationToken.None).Result.Required()
-            .Any(x => x.Ingredients.Any(y => y.IngredientId == (IngredientsList.SelectedItem as IngredientResponse).Required().Id)))
+            .Any(x => x.Ingredients
+                .Any(y => y.IngredientId ==
+                    ingredientClient.GetByName(IngredientsList.SelectedItem.ToString().Required(),
+                    CancellationToken.None).Result.Required().Id)))
+
                 {
                     statusStrip1.Items[0].Text = "Этот элемент используется";
                     return;

@@ -36,4 +36,16 @@ internal sealed class MenuRepository : EntityWithIdRepository<Menu>, IMenuReposi
             .ThenInclude(x => x.IngredientUnits)
             .SingleOrDefaultAsync(x => x.Name == name, token);
     }
+
+    public async override Task<Menu> GetById(Guid id, CancellationToken token)
+    {
+        var recipe = await ById(id)
+                    .Include(x => x.MenuRecipes)
+                    .SingleOrDefaultAsync(token);
+        if (recipe is not null)
+        {
+            return recipe;
+        }
+        throw new KeyNotFoundException("Рецепта с таким идентификатором не найдено");
+    }
 }
